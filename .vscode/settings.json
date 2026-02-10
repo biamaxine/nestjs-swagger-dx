@@ -1,0 +1,28 @@
+{
+  // Editor
+  "editor.fontFamily": "'Fira Code', JetBrains Mono, Menlo, Monaco, Courier New, monospace",
+  "editor.fontLigatures": true,
+  "editor.tabSize": 2,
+  "editor.rulers": [80, 120],
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always"
+  },
+
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  
+  // Workbench
+  "workbench.editor.labelFormat": "short",
+  
+  // Explorer
+  "explorer.compactFolders": false,
+  
+  // Terminal
+  "terminal.integrated.cursorStyle": "line",
+  "terminal.integrated.cursorBlinking": true,
+  
+  // Files
+  "files.autoSave": "off"
+}
