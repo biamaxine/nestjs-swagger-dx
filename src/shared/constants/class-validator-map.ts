@@ -1,0 +1,149 @@
+import * as cv from 'class-validator';
+
+// type PickDecorators<T extends object> = {
+//   [P in keyof T as P extends `${Uppercase<string>}${string}`
+//     ? P extends Uppercase<string>
+//       ? never
+//       : P
+//     : never]: T[P];
+// };
+
+export type PropertyDecoratorFn = (...args: unknown[]) => PropertyDecorator;
+
+// export const SDXClassValidatorMap: Record<
+//   Exclude<
+//     keyof PickDecorators<typeof cv>,
+//     | 'ValidatorConstraint'
+//     | 'ValidationError'
+//     | 'ValidationTypes'
+//     | 'Validator'
+//     | 'MetadataStorage'
+//   >,
+//   PropertyDecoratorFn
+// > = {
+export const SDXClassValidatorMap = {
+  Allow: cv.Allow as PropertyDecoratorFn,
+  ArrayContains: cv.ArrayContains as PropertyDecoratorFn,
+  ArrayNotContains: cv.ArrayNotContains as PropertyDecoratorFn,
+  ArrayNotEmpty: cv.ArrayNotEmpty as PropertyDecoratorFn,
+  ArrayMinSize: cv.ArrayMinSize as PropertyDecoratorFn,
+  ArrayMaxSize: cv.ArrayMaxSize as PropertyDecoratorFn,
+  ArrayUnique: cv.ArrayUnique as PropertyDecoratorFn,
+
+  Contains: cv.Contains as PropertyDecoratorFn,
+
+  Equals: cv.Equals as PropertyDecoratorFn,
+
+  IsDefined: cv.IsDefined as PropertyDecoratorFn,
+  IsOptional: cv.IsOptional as PropertyDecoratorFn,
+  IsLatLong: cv.IsLatLong as PropertyDecoratorFn,
+  IsLatitude: cv.IsLatitude as PropertyDecoratorFn,
+  IsLongitude: cv.IsLongitude as PropertyDecoratorFn,
+  IsEmpty: cv.IsEmpty as PropertyDecoratorFn,
+  IsNotEmpty: cv.IsNotEmpty as PropertyDecoratorFn,
+  IsIn: cv.IsIn as PropertyDecoratorFn,
+  IsNotIn: cv.IsNotIn as PropertyDecoratorFn,
+  IsDivisibleBy: cv.IsDivisibleBy as PropertyDecoratorFn,
+  IsPositive: cv.IsPositive as PropertyDecoratorFn,
+  IsNegative: cv.IsNegative as PropertyDecoratorFn,
+  IsAlpha: cv.IsAlpha as PropertyDecoratorFn,
+  IsAlphanumeric: cv.IsAlphanumeric as PropertyDecoratorFn,
+  IsDecimal: cv.IsDecimal as PropertyDecoratorFn,
+  IsAscii: cv.IsAscii as PropertyDecoratorFn,
+  IsBase64: cv.IsBase64 as PropertyDecoratorFn,
+  IsByteLength: cv.IsByteLength as PropertyDecoratorFn,
+  IsCreditCard: cv.IsCreditCard as PropertyDecoratorFn,
+  IsCurrency: cv.IsCurrency as PropertyDecoratorFn,
+  IsEmail: cv.IsEmail as PropertyDecoratorFn,
+  IsFQDN: cv.IsFQDN as PropertyDecoratorFn,
+  IsFullWidth: cv.IsFullWidth as PropertyDecoratorFn,
+  IsHalfWidth: cv.IsHalfWidth as PropertyDecoratorFn,
+  IsVariableWidth: cv.IsVariableWidth as PropertyDecoratorFn,
+  IsHexColor: cv.IsHexColor as PropertyDecoratorFn,
+  IsHexadecimal: cv.IsHexadecimal as PropertyDecoratorFn,
+  IsMACAddress: cv.IsMACAddress as PropertyDecoratorFn,
+  IsIP: cv.IsIP as PropertyDecoratorFn,
+  IsPort: cv.IsPort as PropertyDecoratorFn,
+  IsISBN: cv.IsISBN as PropertyDecoratorFn,
+  IsISIN: cv.IsISIN as PropertyDecoratorFn,
+  IsISO8601: cv.IsISO8601 as PropertyDecoratorFn,
+  IsJSON: cv.IsJSON as PropertyDecoratorFn,
+  IsJWT: cv.IsJWT as PropertyDecoratorFn,
+  IsLowercase: cv.IsLowercase as PropertyDecoratorFn,
+  IsMobilePhone: cv.IsMobilePhone as PropertyDecoratorFn,
+  IsISO31661Alpha2: cv.IsISO31661Alpha2 as PropertyDecoratorFn,
+  IsISO31661Alpha3: cv.IsISO31661Alpha3 as PropertyDecoratorFn,
+  IsMongoId: cv.IsMongoId as PropertyDecoratorFn,
+  IsMultibyte: cv.IsMultibyte as PropertyDecoratorFn,
+  IsSurrogatePair: cv.IsSurrogatePair as PropertyDecoratorFn,
+  IsUrl: cv.IsUrl as PropertyDecoratorFn,
+  IsUUID: cv.IsUUID as PropertyDecoratorFn,
+  IsFirebasePushId: cv.IsFirebasePushId as PropertyDecoratorFn,
+  IsUppercase: cv.IsUppercase as PropertyDecoratorFn,
+  IsPhoneNumber: cv.IsPhoneNumber as PropertyDecoratorFn,
+  IsMilitaryTime: cv.IsMilitaryTime as PropertyDecoratorFn,
+  IsHash: cv.IsHash as PropertyDecoratorFn,
+  IsISSN: cv.IsISSN as PropertyDecoratorFn,
+  IsDateString: cv.IsDateString as PropertyDecoratorFn,
+  IsBooleanString: cv.IsBooleanString as PropertyDecoratorFn,
+  IsNumberString: cv.IsNumberString as PropertyDecoratorFn,
+  IsBase32: cv.IsBase32 as PropertyDecoratorFn,
+  IsBIC: cv.IsBIC as PropertyDecoratorFn,
+  IsBtcAddress: cv.IsBtcAddress as PropertyDecoratorFn,
+  IsDataURI: cv.IsDataURI as PropertyDecoratorFn,
+  IsEAN: cv.IsEAN as PropertyDecoratorFn,
+  IsEthereumAddress: cv.IsEthereumAddress as PropertyDecoratorFn,
+  IsHSL: cv.IsHSL as PropertyDecoratorFn,
+  IsIBAN: cv.IsIBAN as PropertyDecoratorFn,
+  IsIdentityCard: cv.IsIdentityCard as PropertyDecoratorFn,
+  IsISRC: cv.IsISRC as PropertyDecoratorFn,
+  IsLocale: cv.IsLocale as PropertyDecoratorFn,
+  IsMagnetURI: cv.IsMagnetURI as PropertyDecoratorFn,
+  IsMimeType: cv.IsMimeType as PropertyDecoratorFn,
+  IsOctal: cv.IsOctal as PropertyDecoratorFn,
+  IsPassportNumber: cv.IsPassportNumber as PropertyDecoratorFn,
+  IsPostalCode: cv.IsPostalCode as PropertyDecoratorFn,
+  IsRFC3339: cv.IsRFC3339 as PropertyDecoratorFn,
+  IsRgbColor: cv.IsRgbColor as PropertyDecoratorFn,
+  IsSemVer: cv.IsSemVer as PropertyDecoratorFn,
+  IsStrongPassword: cv.IsStrongPassword as PropertyDecoratorFn,
+  IsTimeZone: cv.IsTimeZone as PropertyDecoratorFn,
+  IsBase58: cv.IsBase58 as PropertyDecoratorFn,
+  IsTaxId: cv.IsTaxId as PropertyDecoratorFn,
+  IsISO4217CurrencyCode: cv.IsISO4217CurrencyCode as PropertyDecoratorFn,
+  IsBoolean: cv.IsBoolean as PropertyDecoratorFn,
+  IsDate: cv.IsDate as PropertyDecoratorFn,
+  IsNumber: cv.IsNumber as PropertyDecoratorFn,
+  IsEnum: cv.IsEnum as PropertyDecoratorFn,
+  IsInt: cv.IsInt as PropertyDecoratorFn,
+  IsString: cv.IsString as PropertyDecoratorFn,
+  IsArray: cv.IsArray as PropertyDecoratorFn,
+  IsObject: cv.IsObject as PropertyDecoratorFn,
+  IsNotEmptyObject: cv.IsNotEmptyObject as PropertyDecoratorFn,
+  IsInstance: cv.IsInstance as PropertyDecoratorFn,
+
+  Length: cv.Length as PropertyDecoratorFn,
+
+  Max: cv.Max as PropertyDecoratorFn,
+  Min: cv.Min as PropertyDecoratorFn,
+  MinDate: cv.MinDate as PropertyDecoratorFn,
+  MaxDate: cv.MaxDate as PropertyDecoratorFn,
+  NotContains: cv.NotContains as PropertyDecoratorFn,
+  MaxLength: cv.MaxLength as PropertyDecoratorFn,
+  MinLength: cv.MinLength as PropertyDecoratorFn,
+  Matches: cv.Matches as PropertyDecoratorFn,
+
+  NotEquals: cv.NotEquals as PropertyDecoratorFn,
+
+  Validate: cv.Validate as PropertyDecoratorFn,
+  ValidateBy: cv.ValidateBy as PropertyDecoratorFn,
+  ValidateIf: cv.ValidateIf as PropertyDecoratorFn,
+  ValidateNested: cv.ValidateNested as PropertyDecoratorFn,
+  ValidatePromise: cv.ValidatePromise as PropertyDecoratorFn,
+
+  // ValidatorConstraint: cv.ValidatorConstraint as PropertyDecoratorFn,
+  // ValidationError: cv.ValidationError as PropertyDecoratorFn,
+  // ValidationTypes: cv.ValidationTypes as PropertyDecoratorFn,
+  // Validator: cv.Validator as PropertyDecoratorFn,
+  // MetadataStorage: cv.MetadataStorage as PropertyDecoratorFn,
+} as const;
