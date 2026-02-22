@@ -37,10 +37,10 @@
     };
     # Enable previews
     previews = {
-      enable = false;
+      enable = true;
       previews = {
         web = {
-          command = ["pnpm" "start:dev"];
+          command = [ "pnpm" "start:dev" ];
           manager = "web";
           env = {
             PORT = "$PORT";
