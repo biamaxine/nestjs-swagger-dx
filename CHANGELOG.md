@@ -1,0 +1,27 @@
+# Changelog
+
+Todas as alterações notáveis neste projeto serão documentadas neste arquivo.
+
+O formato baseia-se no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
+e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.0] - 2026-02-23
+
+### 🚀 Features (Funcionalidades)
+
+- **Integração de Roteamento (Swagger Clean):** Criação dos decorators `@SDXParams`, `@SDXQueries`, `@SDXResponses` e `@SDXRoute` em `shared/decorators`, centralizando e tipando a documentação dos Controllers.
+- **Ecossistema de Testes (UserResource):** Implementação completa do módulo de usuários (`UserService`, `UserController`, `UserEntity`) e bateria de DTOs (`UserRegisterDto`, `UserSignInDto`, `UserFiltersDto`, `UserUpdateMeDto`, `UserUpdateOneDto`, `UserEnableDto`) para validação real e testes da biblioteca. Adição de contratos no `UserSwagger`.
+- **Decorator Core (`@SDXProperty`):** Criação do decorator principal para DTOs e suas interfaces (`SDXPropertyOptions`). Adição dos desativadores de tipo dinâmicos (`SDX_TYPE_DEACTIVATORS`) para otimização de performance.
+- **Utilitários Globais (`SDXValidator` & `SDXTransformer`):** Mapeamento completo dos validadores do `class-validator` e construção de transformadores customizados de alta performance.
+- **Módulo de Configuração (`SDXValidationModule`):** Criação do módulo global para setup de regras padronizadas (ex: região para telefones, whitelists, etc).
+
+### ♻️ Refactoring (Refatorações)
+
+- **Padronização de Constantes:** Renomeação e refatoração de mapeamentos internos para o padrão uppercase (ex: `SDXClassValidatorMap` para `SDX_CLASS_VALIDATOR`, `SDXValidator` para `SDX_VALIDATOR`, `SDXTransformer` para `SDX_TRANSFORMER`).
+- **Correções no `@SDXProperty`:** Correção do `SDX_TYPE_DEACTIVATORS` para excluir a duplicação do tipo `PropertyDecoratorFn` e refatoração geral nas lógicas de opções do decorador.
+
+### ⚙️ Configurações & Setup (Chores)
+
+- **Dependências Base:** Instalação e configuração de `@nestjs/swagger`, `class-validator`, `class-transformer` e `libphonenumber-js`.
+- **Ambiente de Desenvolvimento:** Configuração de previews e suporte no `.idx/dev.nix` (Firebase Studio / Project IDX).
+- **Inicialização:** Criação da fundação do projeto NPM via Nest CLI (`nest new`).
