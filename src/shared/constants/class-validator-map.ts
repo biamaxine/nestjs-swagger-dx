@@ -1,27 +1,8 @@
 import * as cv from 'class-validator';
 
-// type PickDecorators<T extends object> = {
-//   [P in keyof T as P extends `${Uppercase<string>}${string}`
-//     ? P extends Uppercase<string>
-//       ? never
-//       : P
-//     : never]: T[P];
-// };
-
 export type PropertyDecoratorFn = (...args: unknown[]) => PropertyDecorator;
 
-// export const SDXClassValidatorMap: Record<
-//   Exclude<
-//     keyof PickDecorators<typeof cv>,
-//     | 'ValidatorConstraint'
-//     | 'ValidationError'
-//     | 'ValidationTypes'
-//     | 'Validator'
-//     | 'MetadataStorage'
-//   >,
-//   PropertyDecoratorFn
-// > = {
-export const SDXClassValidatorMap = {
+export const SDX_CLASS_VALIDATOR = {
   Allow: cv.Allow as PropertyDecoratorFn,
   ArrayContains: cv.ArrayContains as PropertyDecoratorFn,
   ArrayNotContains: cv.ArrayNotContains as PropertyDecoratorFn,

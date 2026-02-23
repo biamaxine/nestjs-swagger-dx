@@ -6,13 +6,18 @@ import {
 } from 'class-validator';
 import { CountryCode } from 'libphonenumber-js/max';
 
-import { SDXValidation, SDXValidationMap } from '../types/validation-map';
-import { SDXValidationConfig } from '../types/validation-config';
-import { SDXValidationModule } from '../modules/validation.module';
 import {
   PropertyDecoratorFn,
-  SDXClassValidatorMap,
+  SDX_CLASS_VALIDATOR,
 } from './class-validator-map';
+import { SDXValidationModule } from '../modules/validation.module';
+import { SDXValidationConfig } from '../types/validation-config';
+import {
+  SDXValidation,
+  SDXValidationMap,
+  SDXValidationWithInput,
+  SDXValidationWithInputMap,
+} from '../types/validation-map';
 
 function mergeOptions<K extends SDXValidation>(
   key: K,
@@ -27,10 +32,9 @@ function mergeOptions<K extends SDXValidation>(
   } as SDXValidationMap[K] extends { options?: infer O } ? O : undefined;
 }
 
-function mergeValidationOptions<K extends keyof SDXValidationMap>(
-  key: K,
-  validationOptions: ValidationOptions = {},
-): ValidationOptions {
+function mergeValidationOptions<
+  K extends SDXValidation | SDXValidationWithInput,
+>(key: K, validationOptions: ValidationOptions = {}): ValidationOptions {
   const config = SDXValidationModule._getConfig()[key];
 
   return {
@@ -46,9 +50,9 @@ function getConfig<K extends keyof SDXValidationConfig>(
   return SDXValidationModule._getConfig()[key];
 }
 
-export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
+export const SDX_VALIDATOR = {
   Allow: function (validationOptions?: ValidationOptions): PropertyDecorator {
-    return SDXClassValidatorMap.Allow(
+    return SDX_CLASS_VALIDATOR.Allow(
       mergeValidationOptions('Allow', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -56,7 +60,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   ArrayNotEmpty: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.ArrayNotEmpty(
+    return SDX_CLASS_VALIDATOR.ArrayNotEmpty(
       mergeValidationOptions('ArrayNotEmpty', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -64,7 +68,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   ArrayUnique: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.ArrayUnique(
+    return SDX_CLASS_VALIDATOR.ArrayUnique(
       mergeValidationOptions('ArrayUnique', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -72,7 +76,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsDefined: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsDefined(
+    return SDX_CLASS_VALIDATOR.IsDefined(
       mergeValidationOptions('IsDefined', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -80,7 +84,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsOptional: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsOptional(
+    return SDX_CLASS_VALIDATOR.IsOptional(
       mergeValidationOptions('IsOptional', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -88,7 +92,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsLatLong: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsLatLong(
+    return SDX_CLASS_VALIDATOR.IsLatLong(
       mergeValidationOptions('IsLatLong', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -96,7 +100,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsLatitude: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsLatitude(
+    return SDX_CLASS_VALIDATOR.IsLatitude(
       mergeValidationOptions('IsLatitude', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -104,13 +108,13 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsLongitude: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsLongitude(
+    return SDX_CLASS_VALIDATOR.IsLongitude(
       mergeValidationOptions('IsLongitude', validationOptions),
     );
   } as PropertyDecoratorFn,
 
   IsEmpty: function (validationOptions?: ValidationOptions): PropertyDecorator {
-    return SDXClassValidatorMap.IsEmpty(
+    return SDX_CLASS_VALIDATOR.IsEmpty(
       mergeValidationOptions('IsEmpty', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -118,7 +122,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsNotEmpty: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsNotEmpty(
+    return SDX_CLASS_VALIDATOR.IsNotEmpty(
       mergeValidationOptions('IsNotEmpty', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -126,7 +130,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsPositive: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsPositive(
+    return SDX_CLASS_VALIDATOR.IsPositive(
       mergeValidationOptions('IsPositive', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -134,7 +138,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsNegative: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsNegative(
+    return SDX_CLASS_VALIDATOR.IsNegative(
       mergeValidationOptions('IsNegative', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -143,7 +147,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     locale?: validator.AlphaLocale,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsAlpha(
+    return SDX_CLASS_VALIDATOR.IsAlpha(
       locale ?? getConfig('IsAlpha')?.locale,
       mergeValidationOptions('IsAlpha', validationOptions),
     );
@@ -153,7 +157,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     locale?: validator.AlphanumericLocale,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsAlphanumeric(
+    return SDX_CLASS_VALIDATOR.IsAlphanumeric(
       locale ?? getConfig('IsAlphanumeric')?.locale,
       mergeValidationOptions('IsAlphanumeric', validationOptions),
     );
@@ -163,14 +167,14 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     options?: validator.IsDecimalOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsDecimal(
+    return SDX_CLASS_VALIDATOR.IsDecimal(
       mergeOptions('IsDecimal', { options }),
       mergeValidationOptions('IsDecimal', validationOptions),
     );
   } as PropertyDecoratorFn,
 
   IsAscii: function (validationOptions?: ValidationOptions): PropertyDecorator {
-    return SDXClassValidatorMap.IsAscii(
+    return SDX_CLASS_VALIDATOR.IsAscii(
       mergeValidationOptions('IsAscii', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -179,7 +183,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     options?: validator.IsBase64Options,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsBase64(
+    return SDX_CLASS_VALIDATOR.IsBase64(
       mergeOptions('IsBase64', { options }),
       mergeValidationOptions('IsBase64', validationOptions),
     );
@@ -188,7 +192,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsCreditCard: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsCreditCard(
+    return SDX_CLASS_VALIDATOR.IsCreditCard(
       mergeValidationOptions('IsCreditCard', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -197,7 +201,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     options?: validator.IsCurrencyOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsCurrency(
+    return SDX_CLASS_VALIDATOR.IsCurrency(
       mergeOptions('IsCurrency', { options }),
       mergeValidationOptions('IsCurrency', validationOptions),
     );
@@ -207,7 +211,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     options?: validator.IsEmailOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsEmail(
+    return SDX_CLASS_VALIDATOR.IsEmail(
       mergeOptions('IsEmail', { options }),
       mergeValidationOptions('IsEmail', validationOptions),
     );
@@ -217,7 +221,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     options?: validator.IsFQDNOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsFQDN(
+    return SDX_CLASS_VALIDATOR.IsFQDN(
       mergeOptions('IsFQDN', { options }),
       mergeValidationOptions('IsFQDN', validationOptions),
     );
@@ -226,7 +230,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsFullWidth: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsFullWidth(
+    return SDX_CLASS_VALIDATOR.IsFullWidth(
       mergeValidationOptions('IsFullWidth', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -234,7 +238,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsHalfWidth: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsHalfWidth(
+    return SDX_CLASS_VALIDATOR.IsHalfWidth(
       mergeValidationOptions('IsHalfWidth', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -242,7 +246,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsVariableWidth: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsVariableWidth(
+    return SDX_CLASS_VALIDATOR.IsVariableWidth(
       mergeValidationOptions('IsVariableWidth', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -250,7 +254,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsHexColor: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsHexColor(
+    return SDX_CLASS_VALIDATOR.IsHexColor(
       mergeValidationOptions('IsHexColor', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -258,7 +262,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsHexadecimal: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsHexadecimal(
+    return SDX_CLASS_VALIDATOR.IsHexadecimal(
       mergeValidationOptions('IsHexadecimal', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -267,7 +271,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     options?: validator.IsMACAddressOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsMACAddress(
+    return SDX_CLASS_VALIDATOR.IsMACAddress(
       mergeOptions('IsMACAddress', { options }),
       mergeValidationOptions('IsMACAddress', validationOptions),
     );
@@ -277,14 +281,14 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     version?: validator.IPVersion,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsIP(
+    return SDX_CLASS_VALIDATOR.IsIP(
       version ?? getConfig('IsIP')?.version,
       mergeValidationOptions('IsIP', validationOptions),
     );
   } as PropertyDecoratorFn,
 
   IsPort: function (validationOptions?: ValidationOptions): PropertyDecorator {
-    return SDXClassValidatorMap.IsPort(
+    return SDX_CLASS_VALIDATOR.IsPort(
       mergeValidationOptions('IsPort', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -293,14 +297,14 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     version?: validator.ISBNVersion,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsISBN(
+    return SDX_CLASS_VALIDATOR.IsISBN(
       version ?? getConfig('IsISBN')?.version,
       mergeValidationOptions('IsISBN', validationOptions),
     );
   } as PropertyDecoratorFn,
 
   IsISIN: function (validationOptions?: ValidationOptions): PropertyDecorator {
-    return SDXClassValidatorMap.IsISIN(
+    return SDX_CLASS_VALIDATOR.IsISIN(
       mergeValidationOptions('IsISIN', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -309,20 +313,20 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     options?: validator.IsISO8601Options,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsISO8601(
+    return SDX_CLASS_VALIDATOR.IsISO8601(
       mergeOptions('IsISO8601', { options }),
       mergeValidationOptions('IsISO8601', validationOptions),
     );
   } as PropertyDecoratorFn,
 
   IsJSON: function (validationOptions?: ValidationOptions): PropertyDecorator {
-    return SDXClassValidatorMap.IsJSON(
+    return SDX_CLASS_VALIDATOR.IsJSON(
       mergeValidationOptions('IsJSON', validationOptions),
     );
   } as PropertyDecoratorFn,
 
   IsJWT: function (validationOptions?: ValidationOptions): PropertyDecorator {
-    return SDXClassValidatorMap.IsJWT(
+    return SDX_CLASS_VALIDATOR.IsJWT(
       mergeValidationOptions('IsJWT', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -330,7 +334,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsLowercase: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsLowercase(
+    return SDX_CLASS_VALIDATOR.IsLowercase(
       mergeValidationOptions('IsLowercase', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -341,7 +345,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     options?: validator.IsMobilePhoneOptions,
   ): PropertyDecorator {
     const config = getConfig('IsMobilePhone');
-    return SDXClassValidatorMap.IsMobilePhone(
+    return SDX_CLASS_VALIDATOR.IsMobilePhone(
       locale ?? config?.locale,
       mergeOptions('IsMobilePhone', { options }),
       mergeValidationOptions('IsMobilePhone', validationOptions),
@@ -351,7 +355,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsISO31661Alpha2: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsISO31661Alpha2(
+    return SDX_CLASS_VALIDATOR.IsISO31661Alpha2(
       mergeValidationOptions('IsISO31661Alpha2', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -359,7 +363,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsISO31661Alpha3: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsISO31661Alpha3(
+    return SDX_CLASS_VALIDATOR.IsISO31661Alpha3(
       mergeValidationOptions('IsISO31661Alpha3', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -367,7 +371,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsMongoId: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsMongoId(
+    return SDX_CLASS_VALIDATOR.IsMongoId(
       mergeValidationOptions('IsMongoId', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -375,7 +379,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsMultibyte: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsMultibyte(
+    return SDX_CLASS_VALIDATOR.IsMultibyte(
       mergeValidationOptions('IsMultibyte', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -383,7 +387,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsSurrogatePair: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsSurrogatePair(
+    return SDX_CLASS_VALIDATOR.IsSurrogatePair(
       mergeValidationOptions('IsSurrogatePair', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -392,7 +396,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     options?: validator.IsURLOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsUrl(
+    return SDX_CLASS_VALIDATOR.IsUrl(
       mergeOptions('IsUrl', { options }),
       mergeValidationOptions('IsUrl', validationOptions),
     );
@@ -402,7 +406,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     version?: validator.UUIDVersion,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsUUID(
+    return SDX_CLASS_VALIDATOR.IsUUID(
       version ?? getConfig('IsUUID')?.version,
       mergeValidationOptions('IsUUID', validationOptions),
     );
@@ -411,7 +415,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsFirebasePushId: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsFirebasePushId(
+    return SDX_CLASS_VALIDATOR.IsFirebasePushId(
       mergeValidationOptions('IsFirebasePushId', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -419,7 +423,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsUppercase: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsUppercase(
+    return SDX_CLASS_VALIDATOR.IsUppercase(
       mergeValidationOptions('IsUppercase', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -428,7 +432,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     region?: CountryCode,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsPhoneNumber(
+    return SDX_CLASS_VALIDATOR.IsPhoneNumber(
       region ?? getConfig('IsPhoneNumber')?.region,
       mergeValidationOptions('IsPhoneNumber', validationOptions),
     );
@@ -437,7 +441,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsMilitaryTime: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsMilitaryTime(
+    return SDX_CLASS_VALIDATOR.IsMilitaryTime(
       mergeValidationOptions('IsMilitaryTime', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -451,7 +455,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     if (!_algorithm)
       Logger.warn('IsHash was called without an algorithm. Using SHA256.');
 
-    return SDXClassValidatorMap.IsHash(
+    return SDX_CLASS_VALIDATOR.IsHash(
       _algorithm ?? 'SHA256',
       mergeValidationOptions('IsHash', validationOptions),
     );
@@ -461,7 +465,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     options?: validator.IsISSNOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsISSN(
+    return SDX_CLASS_VALIDATOR.IsISSN(
       mergeOptions('IsISSN', { options }),
       mergeValidationOptions('IsISSN', validationOptions),
     );
@@ -471,7 +475,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     options?: validator.IsISO8601Options,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsDateString(
+    return SDX_CLASS_VALIDATOR.IsDateString(
       mergeOptions('IsDateString', { options }),
       mergeValidationOptions('IsDateString', validationOptions),
     );
@@ -480,7 +484,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsBooleanString: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsBooleanString(
+    return SDX_CLASS_VALIDATOR.IsBooleanString(
       mergeValidationOptions('IsBooleanString', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -489,7 +493,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     options?: validator.IsNumericOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsNumberString(
+    return SDX_CLASS_VALIDATOR.IsNumberString(
       mergeOptions('IsNumberString', { options }),
       mergeValidationOptions('IsNumberString', validationOptions),
     );
@@ -498,13 +502,13 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsBase32: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsBase32(
+    return SDX_CLASS_VALIDATOR.IsBase32(
       mergeValidationOptions('IsBase32', validationOptions),
     );
   } as PropertyDecoratorFn,
 
   IsBIC: function (validationOptions?: ValidationOptions): PropertyDecorator {
-    return SDXClassValidatorMap.IsBIC(
+    return SDX_CLASS_VALIDATOR.IsBIC(
       mergeValidationOptions('IsBIC', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -512,7 +516,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsBtcAddress: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsBtcAddress(
+    return SDX_CLASS_VALIDATOR.IsBtcAddress(
       mergeValidationOptions('IsBtcAddress', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -520,13 +524,13 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsDataURI: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsDataURI(
+    return SDX_CLASS_VALIDATOR.IsDataURI(
       mergeValidationOptions('IsDataURI', validationOptions),
     );
   } as PropertyDecoratorFn,
 
   IsEAN: function (validationOptions?: ValidationOptions): PropertyDecorator {
-    return SDXClassValidatorMap.IsEAN(
+    return SDX_CLASS_VALIDATOR.IsEAN(
       mergeValidationOptions('IsEAN', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -534,19 +538,19 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsEthereumAddress: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsEthereumAddress(
+    return SDX_CLASS_VALIDATOR.IsEthereumAddress(
       mergeValidationOptions('IsEthereumAddress', validationOptions),
     );
   } as PropertyDecoratorFn,
 
   IsHSL: function (validationOptions?: ValidationOptions): PropertyDecorator {
-    return SDXClassValidatorMap.IsHSL(
+    return SDX_CLASS_VALIDATOR.IsHSL(
       mergeValidationOptions('IsHSL', validationOptions),
     );
   } as PropertyDecoratorFn,
 
   IsIBAN: function (validationOptions?: ValidationOptions): PropertyDecorator {
-    return SDXClassValidatorMap.IsIBAN(
+    return SDX_CLASS_VALIDATOR.IsIBAN(
       mergeValidationOptions('IsIBAN', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -555,14 +559,14 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     locale?: validator.IdentityCardLocale,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsIdentityCard(
+    return SDX_CLASS_VALIDATOR.IsIdentityCard(
       locale ?? getConfig('IsIdentityCard')?.locale,
       mergeValidationOptions('IsIdentityCard', validationOptions),
     );
   } as PropertyDecoratorFn,
 
   IsISRC: function (validationOptions?: ValidationOptions): PropertyDecorator {
-    return SDXClassValidatorMap.IsISRC(
+    return SDX_CLASS_VALIDATOR.IsISRC(
       mergeValidationOptions('IsISRC', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -570,7 +574,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsLocale: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsLocale(
+    return SDX_CLASS_VALIDATOR.IsLocale(
       mergeValidationOptions('IsLocale', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -578,7 +582,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsMagnetURI: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsMagnetURI(
+    return SDX_CLASS_VALIDATOR.IsMagnetURI(
       mergeValidationOptions('IsMagnetURI', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -586,13 +590,13 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsMimeType: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsMimeType(
+    return SDX_CLASS_VALIDATOR.IsMimeType(
       mergeValidationOptions('IsMimeType', validationOptions),
     );
   } as PropertyDecoratorFn,
 
   IsOctal: function (validationOptions?: ValidationOptions): PropertyDecorator {
-    return SDXClassValidatorMap.IsOctal(
+    return SDX_CLASS_VALIDATOR.IsOctal(
       mergeValidationOptions('IsOctal', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -609,7 +613,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
         'IsPassportNumber was called without a countryCode. Using "US"',
       );
 
-    return SDXClassValidatorMap.IsPassportNumber(
+    return SDX_CLASS_VALIDATOR.IsPassportNumber(
       _countryCode ?? 'US',
       mergeValidationOptions('IsPassportNumber', validationOptions),
     );
@@ -619,7 +623,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     locale?: 'any' | validator.PostalCodeLocale,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsPostalCode(
+    return SDX_CLASS_VALIDATOR.IsPostalCode(
       locale ?? getConfig('IsPostalCode')?.locale,
       mergeValidationOptions('IsPostalCode', validationOptions),
     );
@@ -628,7 +632,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsRFC3339: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsRFC3339(
+    return SDX_CLASS_VALIDATOR.IsRFC3339(
       mergeValidationOptions('IsRFC3339', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -637,7 +641,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     includePercentValues?: boolean,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsRgbColor(
+    return SDX_CLASS_VALIDATOR.IsRgbColor(
       includePercentValues ?? getConfig('IsRgbColor')?.includePercentValues,
       mergeValidationOptions('IsRgbColor', validationOptions),
     );
@@ -646,7 +650,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsSemVer: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsSemVer(
+    return SDX_CLASS_VALIDATOR.IsSemVer(
       mergeValidationOptions('IsSemVer', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -655,7 +659,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     options?: IsStrongPasswordOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsStrongPassword(
+    return SDX_CLASS_VALIDATOR.IsStrongPassword(
       mergeOptions('IsStrongPassword', { options }),
       mergeValidationOptions('IsStrongPassword', validationOptions),
     );
@@ -664,7 +668,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsTimeZone: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsTimeZone(
+    return SDX_CLASS_VALIDATOR.IsTimeZone(
       mergeValidationOptions('IsTimeZone', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -672,7 +676,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsBase58: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsBase58(
+    return SDX_CLASS_VALIDATOR.IsBase58(
       mergeValidationOptions('IsBase58', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -681,7 +685,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     locale?: string,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsTaxId(
+    return SDX_CLASS_VALIDATOR.IsTaxId(
       locale ?? getConfig('IsTaxId')?.locale,
       mergeValidationOptions('IsTaxId', validationOptions),
     );
@@ -690,7 +694,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsISO4217CurrencyCode: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsISO4217CurrencyCode(
+    return SDX_CLASS_VALIDATOR.IsISO4217CurrencyCode(
       mergeValidationOptions('IsISO4217CurrencyCode', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -698,13 +702,13 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsBoolean: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsBoolean(
+    return SDX_CLASS_VALIDATOR.IsBoolean(
       mergeValidationOptions('IsBoolean', validationOptions),
     );
   } as PropertyDecoratorFn,
 
   IsDate: function (validationOptions?: ValidationOptions): PropertyDecorator {
-    return SDXClassValidatorMap.IsDate(
+    return SDX_CLASS_VALIDATOR.IsDate(
       mergeValidationOptions('IsDate', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -713,14 +717,14 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     options?: IsNumberOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsNumber(
+    return SDX_CLASS_VALIDATOR.IsNumber(
       mergeOptions('IsNumber', { options }),
       mergeValidationOptions('IsNumber', validationOptions),
     );
   } as PropertyDecoratorFn,
 
   IsInt: function (validationOptions?: ValidationOptions): PropertyDecorator {
-    return SDXClassValidatorMap.IsInt(
+    return SDX_CLASS_VALIDATOR.IsInt(
       mergeValidationOptions('IsInt', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -728,13 +732,13 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsString: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsString(
+    return SDX_CLASS_VALIDATOR.IsString(
       mergeValidationOptions('IsString', validationOptions),
     );
   } as PropertyDecoratorFn,
 
   IsArray: function (validationOptions?: ValidationOptions): PropertyDecorator {
-    return SDXClassValidatorMap.IsArray(
+    return SDX_CLASS_VALIDATOR.IsArray(
       mergeValidationOptions('IsArray', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -742,7 +746,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   IsObject: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsObject(
+    return SDX_CLASS_VALIDATOR.IsObject(
       mergeValidationOptions('IsObject', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -751,7 +755,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
     validationOptions?: ValidationOptions,
     options?: { nullable?: boolean },
   ): PropertyDecorator {
-    return SDXClassValidatorMap.IsNotEmptyObject(
+    return SDX_CLASS_VALIDATOR.IsNotEmptyObject(
       mergeOptions('IsNotEmptyObject', { options }),
       mergeValidationOptions('IsNotEmptyObject', validationOptions),
     );
@@ -760,7 +764,7 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   ValidateNested: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.ValidateNested(
+    return SDX_CLASS_VALIDATOR.ValidateNested(
       mergeValidationOptions('ValidateNested', validationOptions),
     );
   } as PropertyDecoratorFn,
@@ -768,8 +772,260 @@ export const SDXValidator: Record<SDXValidation, PropertyDecoratorFn> = {
   ValidatePromise: function (
     validationOptions?: ValidationOptions,
   ): PropertyDecorator {
-    return SDXClassValidatorMap.ValidatePromise(
+    return SDX_CLASS_VALIDATOR.ValidatePromise(
       mergeValidationOptions('ValidatePromise', validationOptions),
     );
   } as PropertyDecoratorFn,
-};
+} as const;
+
+export const SDX_VALIDATOR_WITH_INPUT = {
+  ArrayContains: function (
+    inputs: SDXValidationWithInputMap['ArrayContains'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.ArrayContains(
+      ...inputs,
+      mergeValidationOptions('ArrayContains', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  ArrayNotContains: function (
+    inputs: SDXValidationWithInputMap['ArrayNotContains'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.ArrayNotContains(
+      ...inputs,
+      mergeValidationOptions('ArrayNotContains', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  ArrayMinSize: function (
+    inputs: SDXValidationWithInputMap['ArrayMinSize'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.ArrayMinSize(
+      ...inputs,
+      mergeValidationOptions('ArrayMinSize', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  ArrayMaxSize: function (
+    inputs: SDXValidationWithInputMap['ArrayMaxSize'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.ArrayMaxSize(
+      ...inputs,
+      mergeValidationOptions('ArrayMaxSize', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  Contains: function (
+    inputs: SDXValidationWithInputMap['Contains'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.Contains(
+      ...inputs,
+      mergeValidationOptions('Contains', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  Equals: function (
+    inputs: SDXValidationWithInputMap['Equals'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.Equals(
+      ...inputs,
+      mergeValidationOptions('Equals', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  IsIn: function (
+    inputs: SDXValidationWithInputMap['IsIn'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.IsIn(
+      ...inputs,
+      mergeValidationOptions('IsIn', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  IsNotIn: function (
+    inputs: SDXValidationWithInputMap['IsNotIn'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.IsNotIn(
+      ...inputs,
+      mergeValidationOptions('IsNotIn', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  IsDivisibleBy: function (
+    inputs: SDXValidationWithInputMap['IsDivisibleBy'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.IsDivisibleBy(
+      ...inputs,
+      mergeValidationOptions('IsDivisibleBy', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  IsByteLength: function (
+    inputs: SDXValidationWithInputMap['IsByteLength'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.IsByteLength(
+      ...inputs,
+      mergeValidationOptions('IsByteLength', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  IsEnum: function (
+    inputs: SDXValidationWithInputMap['IsEnum'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.IsEnum(
+      ...inputs,
+      mergeValidationOptions('IsEnum', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  IsInstance: function (
+    inputs: SDXValidationWithInputMap['IsInstance'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.IsInstance(
+      ...inputs,
+      mergeValidationOptions('IsInstance', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  Length: function (
+    inputs: SDXValidationWithInputMap['Length'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.Length(
+      ...inputs,
+      mergeValidationOptions('Length', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  Matches: function (
+    inputs: SDXValidationWithInputMap['Matches'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.Matches(
+      ...inputs,
+      mergeValidationOptions('Matches', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  Max: function (
+    inputs: SDXValidationWithInputMap['Max'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.Max(
+      ...inputs,
+      mergeValidationOptions('Max', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  Min: function (
+    inputs: SDXValidationWithInputMap['Min'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.Min(
+      ...inputs,
+      mergeValidationOptions('Min', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  MinDate: function (
+    inputs: SDXValidationWithInputMap['MinDate'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.MinDate(
+      ...inputs,
+      mergeValidationOptions('MinDate', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  MaxDate: function (
+    inputs: SDXValidationWithInputMap['MaxDate'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.MaxDate(
+      ...inputs,
+      mergeValidationOptions('MaxDate', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  MaxLength: function (
+    inputs: SDXValidationWithInputMap['MaxLength'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.MaxLength(
+      ...inputs,
+      mergeValidationOptions('MaxLength', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  MinLength: function (
+    inputs: SDXValidationWithInputMap['MinLength'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.MinLength(
+      ...inputs,
+      mergeValidationOptions('MinLength', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  NotContains: function (
+    inputs: SDXValidationWithInputMap['NotContains'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.NotContains(
+      ...inputs,
+      mergeValidationOptions('NotContains', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  NotEquals: function (
+    inputs: SDXValidationWithInputMap['NotEquals'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.NotEquals(
+      ...inputs,
+      mergeValidationOptions('NotEquals', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  Validate: function (
+    inputs: SDXValidationWithInputMap['Validate'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.Validate(
+      ...inputs,
+      mergeValidationOptions('Validate', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  ValidateBy: function (
+    inputs: SDXValidationWithInputMap['ValidateBy'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.ValidateBy(
+      ...inputs,
+      mergeValidationOptions('ValidateBy', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+
+  ValidateIf: function (
+    inputs: SDXValidationWithInputMap['ValidateIf'],
+    validationOptions?: ValidationOptions,
+  ): PropertyDecorator {
+    return SDX_CLASS_VALIDATOR.ValidateIf(
+      ...inputs,
+      mergeValidationOptions('ValidateIf', validationOptions),
+    );
+  } as PropertyDecoratorFn,
+} as const;

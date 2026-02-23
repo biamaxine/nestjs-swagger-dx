@@ -1,11 +1,11 @@
-import { SDXClassValidatorMap } from './class-validator-map';
+import { SDX_CLASS_VALIDATOR } from './class-validator-map';
 
 export interface SDXTypeDeactivator {
   deactivate: 'string' | 'number' | 'object' | 'array' | null;
 }
 
 export const SDX_TYPE_DEACTIVATORS: Record<
-  keyof typeof SDXClassValidatorMap,
+  keyof typeof SDX_CLASS_VALIDATOR,
   SDXTypeDeactivator
 > = {
   // --- TYPE DEACTIVATORS (Validators que desativam o próprio tipo) ---

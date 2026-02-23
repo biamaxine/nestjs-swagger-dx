@@ -3,7 +3,7 @@ import { Transform, TransformOptions } from 'class-transformer';
 const NORMALIZE_REGEX = /\s+/g;
 const CLEAR_SYMBOLS = /\D/g;
 
-export const SDXTransformer = {
+export const SDX_TRANSFORMER = {
   ToUppercase: <T>(transformOptions?: TransformOptions) =>
     Transform(
       ({ value }: { value: T }): T | string =>
