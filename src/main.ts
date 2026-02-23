@@ -1,9 +1,18 @@
+import { SDXValidationModule } from './shared/modules/validation.module';
+
+// O SDXValidationModule precisa ser contruído antes das demais importações,
+// para que as configurações globais existam antes do TS rodar os decoradores.
+SDXValidationModule.setup({
+  IsEmail: { options: { host_whitelist: ['company.org'] } },
+  IsPhoneNumber: { region: 'BR' },
+  IsUUID: { version: '4' },
+});
+
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
-import { SDXValidationModule } from './shared/modules/validation.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,16 +26,11 @@ async function bootstrap() {
     }),
   );
 
-  SDXValidationModule.setup({
-    IsEmail: { options: { host_whitelist: ['company.org'] } },
-    IsPhoneNumber: { region: 'BR' },
-    IsUUID: { version: '4' },
-  });
-
   const config = new DocumentBuilder()
     .setTitle('NestJS Swagger DX')
     .setDescription('')
     .setVersion('1.0.0')
+    .addBearerAuth()
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
