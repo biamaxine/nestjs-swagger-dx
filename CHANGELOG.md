@@ -5,6 +5,12 @@ Todas as alterações notáveis neste projeto serão documentadas neste arquivo.
 O formato baseia-se no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2026-02-27
+
+### 🐞 Bug Fixes (Correções)
+
+- **Visibilidade da API Pública:** Correção da exposição dos decorators essenciais no ponto de entrada da biblioteca (`index.ts`). Agora, `SDXParams`, `SDXQueries`, `SDXResponses` e `SDXRoute` estão devidamente exportados para uso externo, resolvendo problemas de importação em projetos que consomem a lib.
+
 ## [1.0.1] - 2026-02-27
 
 ### ♻️ Refactoring (Refatorações)

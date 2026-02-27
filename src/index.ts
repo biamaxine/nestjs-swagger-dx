@@ -12,3 +12,8 @@ export { SDX_TRANSFORMER as SDXTransformer } from './shared/constants/transforme
 
 export * from './shared/types/property-options';
 export * from './shared/decorators/property.decorator';
+
+export * from './shared/decorators/params.decorator';
+export * from './shared/decorators/queries.decorator';
+export * from './shared/decorators/responses.decorator';
+export * from './shared/decorators/route.decorator';
