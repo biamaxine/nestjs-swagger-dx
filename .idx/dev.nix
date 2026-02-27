@@ -19,6 +19,7 @@
       "google.gemini-cli-vscode-ide-companion"
       "dbaeumer.vscode-eslint"
       "esbenp.prettier-vscode"
+      "firsttris.vscode-jest-runner"
     ];
     # Workspace lifecycle hooks
     workspace = {

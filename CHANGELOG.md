@@ -5,6 +5,18 @@ Todas as alterações notáveis neste projeto serão documentadas neste arquivo.
 O formato baseia-se no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-02-27
+
+### ♻️ Refactoring (Refatorações)
+
+- **Compatibilidade Expandida do Ecossistema:** Ampliação das `peerDependencies` no `package.json` para garantir suporte oficial e estável tanto para o NestJS v10 quanto para a v11.
+- **Suporte Multiversão (class-validator):** Ajuste dos intervalos de versão para aceitar `class-validator` v0.14 e v0.15, garantindo funcionamento pleno mesmo com as mudanças internas da biblioteca de validação.
+
+### ⚙️ Configurações & Setup (Chores)
+
+- **Otimização de Workspace:** Refatoração do `pnpm-workspace.yaml` com a configuração de `onlyBuiltDependencies` e exclusão do `@scarf/scarf` para instalações mais limpas e seguras.
+- **DX (Developer Experience):** Atualização do ambiente de desenvolvimento no `.idx/dev.nix` com a inclusão da extensão **Jest Runner**, facilitando a execução de testes unitários diretamente pela interface.
+
 ## [1.0.0] - 2026-02-23
 
 ### 🚀 Features (Funcionalidades)
