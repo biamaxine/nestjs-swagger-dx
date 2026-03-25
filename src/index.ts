@@ -17,3 +17,8 @@ export * from './shared/decorators/params.decorator';
 export * from './shared/decorators/queries.decorator';
 export * from './shared/decorators/responses.decorator';
 export * from './shared/decorators/route.decorator';
+
+export * from './shared/dto/prisma/sort-order-input.dto';
+export * from './shared/decorators/prisma/is-sort-order-input.validator';
+export * from './shared/decorators/prisma/is-sort-order.validator';
+export * from './shared/dto/prisma/pagination.dto';

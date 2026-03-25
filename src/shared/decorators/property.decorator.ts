@@ -1,6 +1,7 @@
 import { applyDecorators, Logger } from '@nestjs/common';
-import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptions } from '@nestjs/swagger';
+
+import { Type } from 'class-transformer';
 import { ValidationOptions } from 'class-validator';
 
 import {
@@ -16,7 +17,6 @@ import {
   SDX_VALIDATOR,
   SDX_VALIDATOR_WITH_INPUT,
 } from '../constants/validator';
-import { SDXValidationModule } from '../modules/validation.module';
 import { SDXPropertyOptions } from '../types/property-options';
 import { SDXValidationConfig } from '../types/validation-config';
 import { SDXValidation, SDXValidationWithInput } from '../types/validation-map';
@@ -229,15 +229,14 @@ export function SDXProperty(opts: SDXPropertyOptions = {}) {
       ) {
         addValidator(SDX_CLASS_VALIDATOR.IsString, 'IsString');
       }
-    } else if (type === 'integer') {
-      addValidator(SDX_CLASS_VALIDATOR.IsInt, 'IsInt');
-    } else if (type === Number || type === 'number') {
+    } else if (type === Number || type === 'number' || type === 'integer') {
       const { maximum, minimum } = _apiPropertyOptions;
 
       if (maximum || minimum) {
-        if (maximum) addValidator(SDX_CLASS_VALIDATOR.Max, 'Max', [maximum]);
-
         if (minimum) addValidator(SDX_CLASS_VALIDATOR.Min, 'Min', [minimum]);
+        if (maximum) addValidator(SDX_CLASS_VALIDATOR.Max, 'Max', [maximum]);
+      } else if (type === 'integer') {
+        addValidator(SDX_CLASS_VALIDATOR.IsInt, 'IsInt');
       } else if (canApplyValidator.number) {
         addValidator(SDX_CLASS_VALIDATOR.IsNumber, 'IsNumber');
       }

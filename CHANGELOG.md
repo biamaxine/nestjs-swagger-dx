@@ -5,6 +5,15 @@ Todas as alterações notáveis neste projeto serão documentadas neste arquivo.
 O formato baseia-se no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-03-25
+
+### 🚀 Features (Funcionalidades)
+
+- **Integração Básica com Prisma ORM (Opt-in):** Adição de utilitários nativos para facilitar a construção de paginação e ordenação de buscas em projetos que utilizam o Prisma.
+  - Criação do `PrismaPaginationDto` com abstração automática de `page` e `limit` para os computados `skip` e `take`.
+  - Adição dos validadores de ordenação `IsPrismaSortOrder` e `IsPrismaSortOrderInput`, com suporte a tipos complexos (ex: lidando com valores nulos) e renderização automática no Swagger usando `oneOf`.
+  - A integração foi desenhada como opcional, mantendo a biblioteca agnóstica e sem adicionar o Prisma como dependência direta do projeto.
+
 ## [1.0.3] - 2026-02-27
 
 ### 🐞 Bug Fixes (Correções)

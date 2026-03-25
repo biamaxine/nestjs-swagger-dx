@@ -6,13 +6,17 @@ Ao invés de empilhar dezenas de decoradores para documentar, validar e transfor
 
 ## Get Started
 
+Para instalar o `nestjs-swagger-dx` basta executar um dos comandos abaixo de acordo com seu gerênciador de pacotes de preferência.
+
 ```bash
-npm i nestjs-swagger-dx
+npm i nestjs-swagger-dx @nestjs/swagger class-validator class-transformer
 # OU
-pnpm add nestjs-swagger-dx
+pnpm add nestjs-swagger-dx @nestjs/swagger class-validator class-transformer
 # Ou
-yarn add nestjs-swagger-dx
+yarn add nestjs-swagger-dx @nestjs/swagger class-validator class-transformer
 ```
+
+> Apesar de o `nestjs-swagger-dx` suportar a versão mais recente do `class-validator` (atualmente a versão `0.15^`), o `@nestjs/swagger` informa suporte para somente até a versão `0.14^` (mesmo que funcione na `0.15^`). Para evitar possíveis problemas de compatibilidade e limpar o log de alertas do `@nestjs/swagger`, basta instalar a versão `0.14^` do `class-validator`.
 
 ---
 
@@ -79,6 +83,12 @@ export class UserRegisterDto {
     validators: 'IsNotEmpty', // Injeção interna de @IsNotEmpty()
   })
   name: string;
+
+  @SDXProperty({
+    type: 'integer', // Injeta @IsInt()
+    minimum: 18, // Injeta @Min(18)
+  })
+  age: number;
 
   @SDXProperty({
     minLength: 11, // Injeta @MinLength(11)
@@ -245,6 +255,70 @@ export class UserController {
     // lógica de negócio ...
   }
 }
+```
+
+## Integração Básica com Prisma ORM
+
+A `nestjs-swagger-dx` **não possui o Prisma ORM como dependência**. Você pode usá-la perfeitamente com TypeORM, MikroORM, Drizzle ou qualquer outro.
+
+No entanto, como o Prisma é amplamente utilizado na comunidade NestJS, a biblioteca oferece nativamente alguns utilitários (DTOs e Validadores) como _opt-in_ para facilitar a construção de paginação e ordenação de buscas.
+
+### Paginação (`PrismaPaginationDto`)
+
+O `PrismaPaginationDto` é uma classe utilitária que recebe os clássicos `page` e `limit` do client (via Query Params) e automaticamente expõe os getters computados `skip` e `take`, que é a linguagem nativa que o Prisma entende para paginar registros.
+
+```ts
+import { PrismaPaginationDto } from 'nestjs-swagger-dx';
+
+// O client envia: ?page=2&limit=15
+export class BuscarUsuariosDto extends PrismaPaginationDto {
+  @SDXProperty({ required: false, transformers: 'ToCleanOfSymbols' })
+  cpf?: string;
+}
+
+// No Controller / Service:
+// O objeto já chega com { skip: 15, take: 15 } pronto para o Prisma!
+const usuarios = await prisma.user.findMany({
+  where: { cpf: dto.cpf },
+  skip: dto.skip,
+  take: dto.take,
+});
+```
+
+### Ordenação (`IsPrismaSortOrder` e `IsPrismaSortOrderInput`)
+
+A ordenação no Prisma pode ser simples (apenas uma string `'asc' | 'desc'`) ou complexa, lidando com valores nulos (ex: `{ sort: 'asc', nulls: 'last' }`). A biblioteca fornece decoradores que documentam o Swagger com `oneOf` e transformam a entrada automaticamente.
+
+```ts
+import { IsPrismaSortOrder, IsPrismaSortOrderInput } from 'nestjs-swagger-dx';
+import { Prisma } from 'generated/prisma';
+
+export class BuscarUsuariosDto extends PrismaPaginationDto {
+  // Ordenação simples:
+  // type SortOrder = 'asc' | 'desc';
+  @IsPrismaSortOrderInput()
+  name?: Prisma.SortOrder;
+
+  // Ordenação complexa:
+  // recebe tanto uma string `SortOrder` ou um objeto complexo `SortOrderInput`.
+  // type SortOrderInput = { sort: 'asc' | 'desc'; nulls?: 'first' | 'last' };
+  @IsPrismaSortOrder()
+  created_at?: Prisma.SortOrderInput;
+}
+```
+
+> ⚠️ Importante para o Swagger:\*\* Como o `IsPrismaSortOrderInput` utiliza a funcionalidade `oneOf` do OpenAPI para referenciar um DTO interno, você precisa registrar o modelo extra no seu `main.ts` para que a documentação renderize corretamente:
+
+```ts
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { PrismaSortOrderInputDto } from 'nestjs-swagger-dx';
+
+// dentro da função bootstrap...
+const config = new DocumentBuilder().build();
+const document = SwaggerModule.createDocument(app, config, {
+  extraModels: [PrismaSortOrderInputDto], // Registre aqui!
+});
+SwaggerModule.setup('api', app, document);
 ```
 
 ## Licenciamento
