@@ -5,7 +5,7 @@ Todas as alterações notáveis neste projeto serão documentadas neste arquivo.
 O formato baseia-se no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.0] - 2026-03-25
+## [1.1.2] - 2026-03-27
 
 ### 🚀 Features (Funcionalidades)
 
@@ -13,6 +13,18 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - Criação do `PrismaPaginationDto` com abstração automática de `page` e `limit` para os computados `skip` e `take`.
   - Adição dos validadores de ordenação `IsPrismaSortOrder` e `IsPrismaSortOrderInput`, com suporte a tipos complexos (ex: lidando com valores nulos) e renderização automática no Swagger usando `oneOf`.
   - A integração foi desenhada como opcional, mantendo a biblioteca agnóstica e sem adicionar o Prisma como dependência direta do projeto.
+
+### 🐞 Bug Fixes (Correções)
+
+- **Validação de Nulos (`nullable: true`):** Correção na aplicação da propriedade `nullable`, que estava injetando o decorador `@ValidateIf` de forma inadequada e causando comportamentos indesejados e erros de validação na aplicação.
+- **Comportamento de Arrays (`isArray: true`):** Correção na propagação da opção `each: true`. Anteriormente, ela estava sendo aplicada indevidamente a todos os validadores, incluindo o próprio `@IsArray` e validadores de escopo de array como `@ArrayMinSize` e `@ArrayMaxSize`.
+- **Inferência de Tipos em Arrays:** Corrigido o problema onde a presença da opção `isArray: true` desabilitava erroneamente a identificação e inferência automática do parâmetro `type` pelo sistema.
+
+### ✅ Tests (Testes)
+
+- **Suíte de Validação e Transformação:** Implementação de mais de 70 testes unitários para o decorator `@SDXProperty`, garantindo o funcionamento estrito da injeção de tipagem inferida, metadados do Swagger, validadores customizados e transformadores.
+- **Herança de DTOs:** Adição de testes comprovando a manutenção impecável dos metadados e regras de validação ao utilizar funções utilitárias do NestJS como o `PickType` (ex: `InjectByInferedTypeDto`, `InjectBySwaggerPropsDto`).
+- **Controllers e Rotas:** Criação de testes unitários focados no `TestController`, assegurando que a abstração de roteamento (`@SDXRoute`) preserva as instâncias e referências reais dos DTOs injetados nos métodos.
 
 ## [1.0.3] - 2026-02-27
 

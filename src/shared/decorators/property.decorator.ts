@@ -142,14 +142,18 @@ export function SDXProperty(opts: SDXPropertyOptions = {}) {
     const decorators: PropertyDecorator[] = [];
 
     // o tipo atribuído ou capturado
-    const { type = reflectedType } = apiPropertyOptions;
+    let { type = reflectedType } = apiPropertyOptions;
 
     // Verfica se o tipo é um array
     const isArray =
-      type === 'array' || Array.isArray(type) || _apiPropertyOptions.isArray;
+      type === 'array' ||
+      type === Array ||
+      Array.isArray(type) ||
+      _apiPropertyOptions.isArray;
 
     // Se for, aplica a propriedade `each: true` para cada validação
     if (isArray) _validationOptions.each = true;
+    if (Array.isArray(type)) type = type[0];
 
     const hasValidator = hasPropertyDecorator(validators);
     const hasTransformer = hasPropertyDecorator(transformers);
@@ -215,9 +219,11 @@ export function SDXProperty(opts: SDXPropertyOptions = {}) {
       // `email` ou `cpf`, não queremos passar o objeto para a documentação, nem
       // uma validação @IsString depois de já termos transformado o objeto.
     } else if (type === String || type === 'string') {
-      const { maxLength, minLength } = _apiPropertyOptions;
+      const { maxLength, minLength, pattern } = _apiPropertyOptions;
 
-      if (maxLength || minLength) {
+      if (pattern) {
+        addValidator(SDX_CLASS_VALIDATOR.Matches, 'Matches', [pattern]);
+      } else if (maxLength || minLength) {
         if (maxLength)
           addValidator(SDX_CLASS_VALIDATOR.MaxLength, 'MaxLength', [maxLength]);
 
@@ -232,11 +238,11 @@ export function SDXProperty(opts: SDXPropertyOptions = {}) {
     } else if (type === Number || type === 'number' || type === 'integer') {
       const { maximum, minimum } = _apiPropertyOptions;
 
+      if (type === 'integer') addValidator(SDX_CLASS_VALIDATOR.IsInt, 'IsInt');
+
       if (maximum || minimum) {
         if (minimum) addValidator(SDX_CLASS_VALIDATOR.Min, 'Min', [minimum]);
         if (maximum) addValidator(SDX_CLASS_VALIDATOR.Max, 'Max', [maximum]);
-      } else if (type === 'integer') {
-        addValidator(SDX_CLASS_VALIDATOR.IsInt, 'IsInt');
       } else if (canApplyValidator.number) {
         addValidator(SDX_CLASS_VALIDATOR.IsNumber, 'IsNumber');
       }
@@ -245,27 +251,34 @@ export function SDXProperty(opts: SDXPropertyOptions = {}) {
     } else if (type === Object || type === 'object') {
       if (canApplyValidator.object)
         addValidator(SDX_CLASS_VALIDATOR.IsObject, 'IsObject');
-    } else if (isArray) {
-      const { maxItems, minItems } = _apiPropertyOptions;
-
-      if (maxItems || minItems) {
-        if (maxItems)
-          addValidator(SDX_CLASS_VALIDATOR.ArrayMaxSize, 'ArrayMaxSize', [
-            maxItems,
-          ]);
-
-        if (minItems)
-          addValidator(SDX_CLASS_VALIDATOR.ArrayMinSize, 'ArrayMinSize', [
-            minItems,
-          ]);
-      } else if (canApplyValidator.array) {
-        addValidator(SDX_CLASS_VALIDATOR.IsArray, 'IsArray');
-      }
-    } else if (typeof type !== 'string') {
+    } else if (!isArray && typeof type !== 'string') {
       addValidator(SDX_CLASS_VALIDATOR.ValidateNested, 'ValidateNested');
 
       if (!hasTransformer(Type as PropertyDecoratorFn))
         decorators.push(Type(() => type as Function));
+    }
+
+    if (!ignoreTypeValidations && isArray) {
+      const { maxItems, minItems } = _apiPropertyOptions;
+
+      if (maxItems || minItems) {
+        if (maxItems)
+          addPropertyDecorator(decorators, validators, {
+            ..._validationOptions,
+            each: false,
+          })(SDX_CLASS_VALIDATOR.ArrayMaxSize, 'ArrayMaxSize', [maxItems]);
+
+        if (minItems)
+          addPropertyDecorator(decorators, validators, {
+            ..._validationOptions,
+            each: false,
+          })(SDX_CLASS_VALIDATOR.ArrayMinSize, 'ArrayMinSize', [minItems]);
+      } else if (canApplyValidator.array) {
+        addPropertyDecorator(decorators, validators, {
+          ..._validationOptions,
+          each: false,
+        })(SDX_CLASS_VALIDATOR.IsArray, 'IsArray');
+      }
     }
 
     // Aplicação de @IsOptional que permite entradas `undefined`
@@ -273,14 +286,13 @@ export function SDXProperty(opts: SDXPropertyOptions = {}) {
       addValidator(SDX_CLASS_VALIDATOR.IsOptional, 'IsOptional');
 
     // Aplicação de @ValidateIf que permite entradas `null`
-    if (_apiPropertyOptions.nullable)
+    if (_apiPropertyOptions.nullable) {
       // Aqui usamos `decorators.push` pois não queremos que essa validação seja
       // bloqueada por outros `@ValidateIf` que o dev insira
       decorators.push(
-        SDX_CLASS_VALIDATOR.ValidateIf(
-          ({ value }: { value: unknown }) => value !== null,
-        ),
+        SDX_CLASS_VALIDATOR.ValidateIf((_, value) => value !== null),
       );
+    }
 
     // Aplicação dos transformadores customizados
     for (const t of Array.isArray(transformers)

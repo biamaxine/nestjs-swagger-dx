@@ -1,19 +1,28 @@
 # NestJS Swagger DX
 
+[![NPM Version](https://img.shields.io/npm/v/nestjs-swagger-dx?style=for-the-badge&color=775588&labelColor=775588&label=NestJS%20Swagger%20DX)](https://npmjs.com/package/nestjs-swagger-dx)
+[![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://docs.nestjs.com/)
+[![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://docs.nestjs.com/openapi/introduction)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/docs/handbook/typescript-in-5-minutes.html)
+
 O **NestJS Swagger DX** é uma biblioteca focada em melhorar a Experiência do Desenvolvedor (DX) ao unificar as ferramentas `@nestjs/swagger`, `class-validator` e `class-transformer`.
 
 Ao invés de empilhar dezenas de decoradores para documentar, validar e transformar uma única propriedade, você utiliza uma interface única, inteligente e inferida, mantendo seus DTOs limpos e focados nas regras de negócio.
 
 ## Get Started
 
-Para instalar o `nestjs-swagger-dx` basta executar um dos comandos abaixo de acordo com seu gerênciador de pacotes de preferência.
+Para instalar o `nestjs-swagger-dx` basta executar um dos comandos abaixo de acordo com seu gerenciador de pacotes de preferência.
 
 ```bash
-npm i nestjs-swagger-dx @nestjs/swagger class-validator class-transformer
+npm i nestjs-swagger-dx
+npm i @nestjs/swagger class-validator class-transformer
 # OU
-pnpm add nestjs-swagger-dx @nestjs/swagger class-validator class-transformer
+pnpm add nestjs-swagger-dx
+pnpm add @nestjs/swagger class-validator class-transformer
+pnpm approve-builds --reject --all # Rejeita todos os scripts
 # Ou
-yarn add nestjs-swagger-dx @nestjs/swagger class-validator class-transformer
+yarn add nestjs-swagger-dx
+yarn add @nestjs/swagger class-validator class-transformer
 ```
 
 > Apesar de o `nestjs-swagger-dx` suportar a versão mais recente do `class-validator` (atualmente a versão `0.15^`), o `@nestjs/swagger` informa suporte para somente até a versão `0.14^` (mesmo que funcione na `0.15^`). Para evitar possíveis problemas de compatibilidade e limpar o log de alertas do `@nestjs/swagger`, basta instalar a versão `0.14^` do `class-validator`.
@@ -27,9 +36,10 @@ Com o `SDXValidationModule` é possível definir uma configuração global para 
 ```ts
 import { SDXValidationModule } from 'nestjs-swagger-dx';
 
-// IMPORTANTE: O SDXValidationModule precisa ser construído antes das demais
-// importações. Isso garante que as configurações globais existam na memória
-// antes do TypeScript avaliar e injetar os decoradores nas suas classes DTO.
+// IMPORTANTE: O SDXValidationModule precisa ser construído antes das
+// demais importações. Isso garante que as configurações globais
+// existam na memória antes do TypeScript avaliar e injetar os
+// decoradores nas suas classes DTO.
 SDXValidationModule.setup({
   IsEmail: { options: { host_whitelist: ['company.org'] } },
   IsPhoneNumber: { region: 'BR' },
@@ -80,12 +90,12 @@ export class UserRegisterDto {
       'ToNormalized', // Limpa espaços extras
       'ToUppercase', // Converte para maiúsculas
     ],
-    validators: 'IsNotEmpty', // Injeção interna de @IsNotEmpty()
+    validators: 'IsNotEmpty', // Injeção interna de @IsNotEmpty
   })
   name: string;
 
   @SDXProperty({
-    type: 'integer', // Injeta @IsInt()
+    type: 'integer', // Injeta @IsInt
     minimum: 18, // Injeta @Min(18)
   })
   age: number;
@@ -93,26 +103,51 @@ export class UserRegisterDto {
   @SDXProperty({
     minLength: 11, // Injeta @MinLength(11)
     maxLength: 11, // Injeta @MaxLength(11)
-    transformers: 'ToCleanOfSymbols', // Limpa todos os caracteres não numéricos
+    // Limpa todos os caracteres não numéricos
+    transformers: 'ToCleanOfSymbols',
   })
   cpf: string;
 
   @SDXProperty({
-    validators: 'IsEmail', // Injeção interna de @IsEmail()
+    validators: 'IsEmail', // Injeção interna de @IsEmail
   })
   email: string;
 
   @SDXProperty({
     required: false, // Injeta @IsOptional
-    transformers: 'ToCleanOfSymbols', // Limpa todos os caracteres não numéricos
-    validators: 'IsPhoneNumber', // Injeção interna de @IsPhoneNumber()
+    transformers: 'ToCleanOfSymbols',
+    // Injeção interna de @IsPhoneNumber
+    validators: 'IsPhoneNumber',
   })
   phone?: string;
 
   @SDXProperty({
-    validators: 'IsStrongPassword', // Injeção interna de @IsStrongPassword()
+    // Injeção interna de @IsStrongPassword
+    validators: 'IsStrongPassword',
   })
   password: string;
+}
+```
+
+```ts
+import { PartialType, PickType } from '@nestjs/swagger';
+import { SDXProperty } from 'nestjs-swagger-dx';
+
+import { UserRegisterDto } from './user-register.dto';
+
+// O SDXProperty funciona perfeitamente com as funções auxiliares
+// PartialType, PickType, OmitType e IntersectionType
+export class UserUpdateDto extends PartialType(
+  PickType(UserRegisterDto, ['name', 'age', 'cpf', 'email', 'password']),
+) {
+  @SDXProperty({
+    required: false,
+    // Injeta @ValidateIf((_, value) => value !== null)
+    nullable: true,
+    transformers: 'ToCleanOfSymbols',
+    validators: 'IsPhoneNumber',
+  })
+  phone?: string | null; // null remove o telefone do DB
 }
 ```
 
@@ -204,8 +239,10 @@ const USER_MOCK = { ...rest };
 const SIGN_IN: SDXRoute<{
   responses: SDXResponses<'OK' | 'CONFLICT'>; // As chaves
 }> = {
-  summary: 'Realiza a autenticação do usuário', // Propriedade herdada de ApiOperationOptions
-  statusCode: 200, // Redefine o status de resposta padrão da rota para `OK`
+  // Propriedade herdada de ApiOperationOptions
+  summary: 'Realiza a autenticação do usuário',
+  // Redefine o status de resposta padrão da rota para `OK`
+  statusCode: 200,
   responses: {
     // A Intellisense auxilia no preenchimento, graças ao tipo definido.
     OK: {
@@ -224,13 +261,24 @@ const READ_ONE: SDXRoute<{
 }> = {
   summary: 'Retorna um usuário específico pelo identificador',
   params: {
-    identifier: { description: 'O ID, CPF ou E-mail do usuário buscado' },
+    identifier: {
+      description: 'O ID, CPF ou E-mail do usuário buscado',
+    },
   },
   responses: {
-    OK: { description: 'Usuário encontrado com sucesso', example: USER_MOCK },
-    NOT_FOUND: { description: 'Usuário não encontrado na base de dados' },
-    UNAUTHORIZED: { description: 'Token de autenticação inválido ou ausente' },
-    FORBIDDEN: { description: 'Acesso negado por falta de privilégios' },
+    OK: {
+      description: 'Usuário encontrado com sucesso',
+      example: USER_MOCK,
+    },
+    NOT_FOUND: {
+      description: 'Usuário não encontrado na base de dados',
+    },
+    UNAUTHORIZED: {
+      description: 'Token de autenticação inválido ou ausente',
+    },
+    FORBIDDEN: {
+      description: 'Acesso negado por falta de privilégios',
+    },
   },
 };
 
@@ -242,7 +290,8 @@ import UserSwagger from './user.swagger';
 
 @Controller()
 export class UserController {
-  // A implementação da documentação no Controller é feita com um único decorator
+  // A implementação da documentação no Controller é feita com um
+  // único decorator
   @Post('sign-in')
   @SDXRoute(UserSwagger.SIGN_IN) // Injeta @HttpCode(200)
   SIGN_IN() {
@@ -295,19 +344,24 @@ import { Prisma } from 'generated/prisma';
 
 export class BuscarUsuariosDto extends PrismaPaginationDto {
   // Ordenação simples:
+  //
   // type SortOrder = 'asc' | 'desc';
-  @IsPrismaSortOrderInput()
+  @IsPrismaSortOrder()
   name?: Prisma.SortOrder;
 
-  // Ordenação complexa:
-  // recebe tanto uma string `SortOrder` ou um objeto complexo `SortOrderInput`.
-  // type SortOrderInput = { sort: 'asc' | 'desc'; nulls?: 'first' | 'last' };
-  @IsPrismaSortOrder()
+  // Ordenação complexa: Recebe tanto uma string `SortOrder` quanto
+  // um objeto complexo `SortOrderInput`.
+  //
+  // type SortOrderInput = {
+  //   sort: 'asc' | 'desc';
+  //   nulls?: 'first' | 'last';
+  // };
+  @IsPrismaSortOrderInput()
   created_at?: Prisma.SortOrderInput;
 }
 ```
 
-> ⚠️ Importante para o Swagger:\*\* Como o `IsPrismaSortOrderInput` utiliza a funcionalidade `oneOf` do OpenAPI para referenciar um DTO interno, você precisa registrar o modelo extra no seu `main.ts` para que a documentação renderize corretamente:
+> **⚠️ Importante para o Swagger:** Como o `IsPrismaSortOrderInput` utiliza a funcionalidade `oneOf` do OpenAPI para referenciar um DTO interno, você precisa registrar o modelo extra no seu `main.ts` para que a documentação renderize corretamente:
 
 ```ts
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';

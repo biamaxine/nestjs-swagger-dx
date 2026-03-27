@@ -1,15 +1,16 @@
-import { SDXValidationModule } from './shared/modules/validation.module';
+import { SDXValidationModule } from 'src';
 
 // O SDXValidationModule precisa ser contruído antes das demais importações,
 // para que as configurações globais existam antes do TS rodar os decoradores.
 SDXValidationModule.setup({
-  IsEmail: { options: { host_whitelist: ['company.org'] } },
+  IsEmail: { options: { host_whitelist: ['example.com'] } },
   IsPhoneNumber: { region: 'BR' },
+  IsUrl: { options: { host_whitelist: ['example.com'] } },
   IsUUID: { version: '4' },
 });
 
-import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';

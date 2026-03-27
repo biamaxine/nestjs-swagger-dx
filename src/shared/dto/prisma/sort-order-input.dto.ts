@@ -1,5 +1,5 @@
-import { NullsOrder, SortOrder } from 'src/shared/constants/prisma/enums';
-import { SDXProperty } from 'src/shared/decorators/property.decorator';
+import { NullsOrder, SortOrder } from '../../constants/prisma/enums';
+import { SDXProperty } from '../../decorators/property.decorator';
 
 interface SortOrderInput {
   sort: SortOrder;

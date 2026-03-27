@@ -1,11 +1,12 @@
 import { applyDecorators } from '@nestjs/common';
 import { getSchemaPath } from '@nestjs/swagger';
 
+import { plainToInstance, Type } from 'class-transformer';
 import { ValidationOptions } from 'class-validator';
-import { SDXTransformer } from 'src';
-import { PrismaSortOrderInputDto } from 'src/shared/dto/prisma/sort-order-input.dto';
-import { SortOrder } from 'src/shared/constants/prisma/enums';
 
+import { SortOrder } from '../../constants/prisma/enums';
+import { SDX_TRANSFORMER } from '../../constants/transformer';
+import { PrismaSortOrderInputDto } from '../../dto/prisma/sort-order-input.dto';
 import { SDXProperty } from '../property.decorator';
 
 export function IsPrismaSortOrderInput(opts?: ValidationOptions) {
@@ -17,8 +18,12 @@ export function IsPrismaSortOrderInput(opts?: ValidationOptions) {
         { type: 'string', enum: Object.keys(SortOrder) },
       ],
       required: false,
+      validators: ['IsObject', 'ValidateNested'],
       validationOptions: opts,
     }),
-    SDXTransformer.StringTo(value => ({ sort: value })),
+    Type(() => PrismaSortOrderInputDto),
+    SDX_TRANSFORMER.StringTo(value =>
+      plainToInstance(PrismaSortOrderInputDto, { sort: value }),
+    ),
   );
 }

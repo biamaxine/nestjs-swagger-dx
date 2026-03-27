@@ -6,7 +6,8 @@
   "editor.rulers": [80, 120],
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "always"
+    "source.fixAll.eslint": "always",
+    "source.organizeImports": "always"
   },
 
   "[json]": {
