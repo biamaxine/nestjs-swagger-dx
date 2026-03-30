@@ -1,15 +1,14 @@
-import { NullsOrder, SortOrder } from '../../constants/prisma/enums';
 import { SDXProperty } from '../../decorators/property.decorator';
 
 interface SortOrderInput {
-  sort: SortOrder;
-  nulls?: NullsOrder;
+  sort: 'asc' | 'desc';
+  nulls?: 'first' | 'last';
 }
 
 export class PrismaSortOrderInputDto implements SortOrderInput {
-  @SDXProperty({ enum: SortOrder })
-  sort: SortOrder;
+  @SDXProperty({ enum: ['asc', 'desc'] })
+  sort: 'asc' | 'desc';
 
-  @SDXProperty({ enum: NullsOrder, required: false })
-  nulls?: NullsOrder;
+  @SDXProperty({ enum: ['first', 'last'], required: false })
+  nulls?: 'first' | 'last';
 }

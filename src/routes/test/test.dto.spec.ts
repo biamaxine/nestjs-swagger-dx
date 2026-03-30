@@ -46,6 +46,8 @@ describe('Testes de Validação e Transformação (SDXProperty)', () => {
     uuid: '5f629ed3-a29c-4bc6-8630-fa95f5b080d9',
     password: 'Senha@123',
 
+    activator: false,
+
     uppercase: 'texto maiúsculo',
     lowercase: 'TEXTO MINÚSCULO',
     normalized: '    texto     normalizado  ',
@@ -157,6 +159,8 @@ describe('Testes de Validação e Transformação (SDXProperty)', () => {
           url: 'https://google.com', // Domínio inválido
           uuid: '019d2a7f-e553-7c3b-b5a6-ad428c04a09f', // UUID v7
           password: 'Senha', // Senha Fraca
+
+          activator: true,
 
           sortOrder: 'invalid',
           sortOrderInput: 'invalid',
@@ -315,6 +319,11 @@ describe('Testes de Validação e Transformação (SDXProperty)', () => {
         expect(err?.constraints).toHaveProperty('isStrongPassword');
       });
 
+      it('dto.if_activator foi rejeitado por ser obrigatório quando "activator" é true?', () => {
+        const err = errors.find(e => e.property === 'if_activator');
+        expect(err?.constraints).toHaveProperty('isDefined');
+      });
+
       it('dto.page foi rejeitado por ser menor que 1?', () => {
         const err = errors.find(e => e.property === 'page');
         expect(err?.constraints).toHaveProperty('min');
@@ -359,7 +368,6 @@ describe('Testes de Validação e Transformação (SDXProperty)', () => {
 
     describe('Metadados de Documentação (docType): ', () => {
       const getSwaggerMetaType = (targetClass: any, propertyKey: string) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return Reflect.getMetadata(
           'swagger/apiModelProperties',
           targetClass.prototype,

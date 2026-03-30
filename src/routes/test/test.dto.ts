@@ -6,6 +6,7 @@ import {
   PrismaSortOrderInputDto,
   SDXProperty,
   SDXTransformer,
+  SDXValidator,
 } from 'src/index';
 
 export const TestEnum = { a: 'a', b: 'b', c: 'c', d: 'd', e: 'e' } as const;
@@ -51,6 +52,12 @@ export class TestDTO extends PrismaPaginationDto {
   @SDXProperty({ validators: 'IsUrl' }) url: string;
   @SDXProperty({ validators: 'IsUUID' }) uuid: string;
   @SDXProperty({ validators: 'IsStrongPassword' }) password: string;
+
+  @SDXProperty() activator: boolean;
+
+  @SDXValidator.ValidateIf({}, ({ activator }) => !!activator)
+  @SDXProperty({ docRequired: false, validators: 'IsDefined' })
+  if_activator?: boolean;
   // ---------------------------------------------------------------------------
 
   //

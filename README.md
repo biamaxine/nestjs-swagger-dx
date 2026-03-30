@@ -36,18 +36,18 @@ Com o `SDXValidationModule` é possível definir uma configuração global para 
 ```ts
 import { SDXValidationModule } from 'nestjs-swagger-dx';
 
-// IMPORTANTE: O SDXValidationModule precisa ser construído antes das
-// demais importações. Isso garante que as configurações globais
-// existam na memória antes do TypeScript avaliar e injetar os
-// decoradores nas suas classes DTO.
+// IMPORTANTE: O SDXValidationModule precisa ser construído
+// antes das demais importações. Isso garante que as
+// configurações globais existam na memória antes do TypeScript
+// avaliar e injetar os decoradores nas suas classes DTO.
 SDXValidationModule.setup({
   IsEmail: { options: { host_whitelist: ['company.org'] } },
   IsPhoneNumber: { region: 'BR' },
   IsUUID: { version: '4' },
 });
 
-import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
@@ -61,7 +61,8 @@ async function bootstrap() {
       transform: true,
       // Recomendado: Remove propriedades não mapeadas.
       whitelist: true,
-      // Recomendado: Lança erro se houver propriedades não mapeadas.
+      // Recomendado: Lança erro se houver propriedades não
+      // mapeadas.
       forbidNonWhitelisted: true,
       // Recomendado: Permite conversões implícitas.
       transformOptions: { enableImplicitConversion: true },
@@ -135,8 +136,9 @@ import { SDXProperty } from 'nestjs-swagger-dx';
 
 import { UserRegisterDto } from './user-register.dto';
 
-// O SDXProperty funciona perfeitamente com as funções auxiliares
-// PartialType, PickType, OmitType e IntersectionType
+// O SDXProperty funciona perfeitamente com as funções
+// auxiliares PartialType, PickType, OmitType e
+// IntersectionType.
 export class UserUpdateDto extends PartialType(
   PickType(UserRegisterDto, ['name', 'age', 'cpf', 'email', 'password']),
 ) {
@@ -153,23 +155,46 @@ export class UserUpdateDto extends PartialType(
 
 ### Validação de Tipo Automatizada
 
-A biblioteca utiliza _Reflection_ para ler a tipagem nativa do TypeScript. Se você definir uma propriedade como `string`, `number`, `boolean` ou um `Array`, o `@SDXProperty` injetará silenciosamente os validadores correspondentes (`@IsString()`, `@IsNumber()`, `@IsBoolean()`, etc.).
+A biblioteca utiliza _Reflection_ para ler a tipagem nativa do TypeScript. Se você definir uma propriedade como `string`, `number`, `boolean` ou mesmo um `Array`, o `@SDXProperty` injetará silenciosamente os validadores correspondentes (`@IsString`, `@IsNumber`, `@IsBoolean`, `@IsArray`, etc.).
 
-Se a propriedade for uma classe complexa, ele aplica automaticamente `@ValidateNested()` e `@Type(() => SuaClasse)`. Se você passar `nullable: true` para a documentação, ele aplica `@ValidateIf(({ value }) => value !== null)`, validando qualquer `null` explicito.
+Se a propriedade for uma classe complexa, ele aplica automaticamente `@ValidateNested` e `@Type(() => SuaClasse)`. Se você passar `nullable: true` para a documentação, ele aplica `@ValidateIf((_, value) => value !== null)`, validando qualquer `null` explicito.
 
-- **Performance (Type Deactivators):** Para evitar redundância e perda de performance, o pacote conta com uma lógica de desativação inteligente. Se você solicitar o validador `IsEmail`, o pacote entende que _"todo e-mail é uma string"_, e desativa a injeção redundante do `@IsString()`, mantendo a pilha de validação no _runtime_ extremamente rápida e limpa.
+- **Performance (Type Deactivators):** Para evitar redundância e perda de performance, o pacote conta com uma lógica de desativação inteligente. Se você solicitar o validador `IsEmail`, o pacote entende que _"todo e-mail é uma string"_, e desativa a injeção redundante do `@IsString`, mantendo a pilha de validação no _runtime_ extremamente rápida e limpa.
+
+### Validação das Propriedades Nativas do Swagger
+
+Além de inferir os tipos básicos do TypeScript, o `@SDXProperty` também entende as propriedades nativas de validação da especificação OpenAPI (Swagger).
+
+Isso significa que, ao documentar limites de tamanho, padrões numéricos ou listas de opções permitidas para a sua API, a biblioteca converte automaticamente essas informações para os validadores correspondentes do `class-validator`.
+
+| PROPRIEDADES SUPORTADAS   | VALIDAÇÃO                                   |
+| ------------------------- | ------------------------------------------- |
+| `maxLength` & `minLength` | `@MaxLength` & `@MinLength`                 |
+| `maximum` & `minimum`     | `@Max` & `@Min`                             |
+| `pattern`                 | `@Matches`                                  |
+| `required: false`         | `@IsOptional`                               |
+| `nullable`                | `@ValidateIf((_, value) => value !== null)` |
+| `maxItems` & `minItems`   | `@ArrayMaxSize` & `@ArrayMinSize`           |
+| `type: 'integer'`         | `@IsInt`                                    |
+| `isArray`                 | `@IsArray`                                  |
+| `enum`                    | `@IsEnum`                                   |
 
 ### Lógica Facilitada de Transformação e Validação
 
-- `transformers`: Aceita chaves predefinidas (como `'ToNormalized'`, `'ToCleanOfSymbols'`, `'ToUppercase'`) ou funções customizadas. Ele aplica o `@Transform()` do `class-transformer` de forma limpa. Ideal para remover espaços em branco, limpar formatação de CPFs/Telefones ou fazer parse de dados antes que eles cheguem na camada de validação.
+- `transformers`: Aceita chaves predefinidas (como `'ToNormalized'`, `'ToCleanOfSymbols'`, `'ToUppercase'`) ou funções customizadas. Ele aplica o `@Transform` do `class-transformer` de forma limpa. Ideal para remover espaços em branco, limpar formatação de CPFs/Telefones ou fazer parse de dados antes que eles cheguem na camada de validação _(veja a [tabela](#tabela-de-transformações-predefinidas) para conhecer todos os transformadores predefinidos)_.
 - `validators`: Reduz a necessidade de dezenas de imports no topo do arquivo. Você pode passar uma única string (ex: `'IsNotEmpty'`) ou um array de regras (`['IsEmail', 'IsNotEmpty']`) mapeadas nativamente para o `class-validator`.
 
-### Válvulas de Escape
+### Válvula de Escape e Documentação Exclusiva
 
-Existem cenários onde o tipo de entrada na API difere do tipo de uso interno. Para esses casos avançados, o `@SDXProperty` fornece duas válvulas de escape:
+Existem cenários onde o tipo de entrada na API difere do tipo de uso interno. Para esses casos avançados, o `@SDXProperty` fornece uma válvula de escape, além de propriedades que alteram exclusivamente a documentação sem mexer no comportamento da sua API:
+
+- `ignoreValidations`: Quando definido como `true`, impede que o sistema infira validações primitivas baseadas no tipo do TypeScript. Muito útil quando necessário trabalhar com _Union Types_ (`number | string`) ou `oneOf`, nativo do `ApiProperty`. O Typescript não consegue inferir corretamente um tipo para uniões complexas, normalmente retornando `object` como default.
+
+**Documentação Exclusiva:**
 
 - `docType`: Permite que você sobrescreva **apenas** a tipagem exibida na documentação do Swagger, mantendo a validação e a inferência interna intactas.
-- `ignoreTypeValidations`: Quando definido como `true`, impede que o sistema infira validações primitivas baseadas no tipo do TypeScript. Muito útil quando necessário trabalhar com _Union Types_ (`number | string`) ou `oneOf`, nativo do `ApiProperty`. O Typescript não consegue inferir corretamente um tipo para uniões complexas, normalmente retornando `object` como default.
+- `docRequired`: Permite definir se a propriedade é obrigatória ou opcional **exclusivamente** na documentação do Swagger. Diferente da propriedade `required` padrão (que, se definida como `false`, injeta automaticamente o `@IsOptional`), o `docRequired` altera apenas o contrato visual da sua API, sem interferir na cadeia de validação.
+- `docNullable`: Permite exibir na documentação que a propriedade aceita valores nulos, sem alterar o comportamento interno. Diferente do `nullable` nativo (que injeta automaticamente uma validação no `class-validator` permitindo a entrada explícita de `null`), o `docNullable` serve apenas para o contrato visual gerado pelo OpenAPI.
 
 ---
 
@@ -182,7 +207,8 @@ import { SDXValidator, SDXTransformer } from 'nestjs-swagger-dx';
 
 export class SimpleDto {
   @SDXTransformer.ToCleanOfSymbols()
-  @SDXValidator.IsPhoneNumber('US') // Sobrescreve o valor global localmente
+  // Sobrescreve o valor global localmente
+  @SDXValidator.IsPhoneNumber('US')
   telefoneLocal: string;
 
   // Transformador genérico com inferência e segurança de tipo
@@ -192,21 +218,23 @@ export class SimpleDto {
 }
 ```
 
-O `@SDXValidator` espelha diretamente os decoradores do `class-validator` na versão `0.14.3` (`@SDXValidator.IsEmail()`, `@SDXValidator.IsUUID()`, `@SDXValidator.IsCurrency()`, etc.), a única diferença, é que usando o `@SDXValidator`, os validadores aplicam as validações globais definidas.
+O `@SDXValidator` espelha diretamente os decoradores do `class-validator` na versão `0.14.3` (`@SDXValidator.IsEmail`, `@SDXValidator.IsUUID`, `@SDXValidator.IsCurrency`, etc.), a única diferença, é que usando o `@SDXValidator`, os validadores aplicam as validações globais definidas.
 
 Já o `@SDXTransformer` possui transformações exclusivas descritas na tabela abaixo:
 
-| `@SDXTransformer`    | Descrição                                                                                                                                                                 |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `'ToUppercase'`      | Converte o valor para letras maiúsculas. Aplica-se apenas se a entrada original for do tipo `string`.                                                                     |
-| `'ToLowercase'`      | Converte o valor para letras minúsculas. Aplica-se apenas se a entrada original for do tipo `string`.                                                                     |
-| `'ToNormalized'`     | Remove espaços em branco desnecessários nas extremidades (`trim`) e substitui múltiplos espaços internos consecutivos por um único espaço.                                |
-| `'ToCleanOfSymbols'` | Remove todos os caracteres não numéricos (regex `\D`) de uma string. Ideal para higienizar dados como CPFs, CNPJs, CEPs e telefones.                                      |
-| `'ToParsedJSON'`     | Tenta executar `JSON.parse()` no valor de entrada. Se a conversão falhar ou o valor não for uma string, ele retorna o dado original intacto, evitando quebras de runtime. |
-| `StringTo<T, U>`     | Função de ordem superior que recebe um callback customizado. O callback só é executado se o dado original da requisição for do tipo `string`.                             |
-| `NumberTo<T, U>`     | Função de ordem superior que recebe um callback customizado. O callback só é executado se o dado original da requisição for do tipo `number`.                             |
-| `BooleanTo<T, U>`    | Função de ordem superior que recebe um callback customizado. O callback só é executado se o dado original da requisição for do tipo `boolean`.                            |
-| `ObjectTo<T, U>`     | Função de ordem superior que recebe um callback customizado. O callback só é executado se o dado original da requisição for do tipo `object`.                             |
+### Tabela de Transformações Predefinidas
+
+| `@SDXTransformer`    | Descrição                                                                                                                                                               |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `'ToUppercase'`      | Converte o valor para letras maiúsculas. Aplica-se apenas se a entrada original for do tipo `string`.                                                                   |
+| `'ToLowercase'`      | Converte o valor para letras minúsculas. Aplica-se apenas se a entrada original for do tipo `string`.                                                                   |
+| `'ToNormalized'`     | Remove espaços em branco desnecessários nas extremidades (`trim`) e substitui múltiplos espaços internos consecutivos por um único espaço.                              |
+| `'ToCleanOfSymbols'` | Remove todos os caracteres não numéricos (regex `\D`) de uma string. Ideal para higienizar dados como CPFs, CNPJs, CEPs e telefones.                                    |
+| `'ToParsedJSON'`     | Tenta executar `JSON.parse` no valor de entrada. Se a conversão falhar ou o valor não for uma string, ele retorna o dado original intacto, evitando quebras de runtime. |
+| `StringTo<T, U>`     | Função de ordem superior que recebe um callback customizado. O callback só é executado se o dado original da requisição for do tipo `string`.                           |
+| `NumberTo<T, U>`     | Função de ordem superior que recebe um callback customizado. O callback só é executado se o dado original da requisição for do tipo `number`.                           |
+| `BooleanTo<T, U>`    | Função de ordem superior que recebe um callback customizado. O callback só é executado se o dado original da requisição for do tipo `boolean`.                          |
+| `ObjectTo<T, U>`     | Função de ordem superior que recebe um callback customizado. O callback só é executado se o dado original da requisição for do tipo `object`.                           |
 
 ---
 
@@ -244,7 +272,8 @@ const SIGN_IN: SDXRoute<{
   // Redefine o status de resposta padrão da rota para `OK`
   statusCode: 200,
   responses: {
-    // A Intellisense auxilia no preenchimento, graças ao tipo definido.
+    // A Intellisense auxilia no preenchimento, graças ao
+    // tipo definido.
     OK: {
       description: 'Autenticação realizada com sucesso',
     },
@@ -290,8 +319,8 @@ import UserSwagger from './user.swagger';
 
 @Controller()
 export class UserController {
-  // A implementação da documentação no Controller é feita com um
-  // único decorator
+  // A implementação da documentação no Controller é feita
+  // com um único decorator
   @Post('sign-in')
   @SDXRoute(UserSwagger.SIGN_IN) // Injeta @HttpCode(200)
   SIGN_IN() {
@@ -321,12 +350,16 @@ import { PrismaPaginationDto } from 'nestjs-swagger-dx';
 
 // O client envia: ?page=2&limit=15
 export class BuscarUsuariosDto extends PrismaPaginationDto {
-  @SDXProperty({ required: false, transformers: 'ToCleanOfSymbols' })
+  @SDXProperty({
+    required: false,
+    transformers: 'ToCleanOfSymbols',
+  })
   cpf?: string;
 }
 
 // No Controller / Service:
-// O objeto já chega com { skip: 15, take: 15 } pronto para o Prisma!
+// O objeto já chega com { skip: 15, take: 15 } pronto para
+// o Prisma!
 const usuarios = await prisma.user.findMany({
   where: { cpf: dto.cpf },
   skip: dto.skip,
@@ -349,8 +382,8 @@ export class BuscarUsuariosDto extends PrismaPaginationDto {
   @IsPrismaSortOrder()
   name?: Prisma.SortOrder;
 
-  // Ordenação complexa: Recebe tanto uma string `SortOrder` quanto
-  // um objeto complexo `SortOrderInput`.
+  // Ordenação complexa: Recebe tanto uma string `SortOrder`
+  // quanto um objeto complexo `SortOrderInput`.
   //
   // type SortOrderInput = {
   //   sort: 'asc' | 'desc';
@@ -377,8 +410,7 @@ SwaggerModule.setup('api', app, document);
 
 ## Licenciamento
 
-Este projeto está sob a licença **MIT**. Veja o arquivo [LICENSE](https://www.google.com/search?q=LICENSE) para mais detalhes. Sinta-se livre para usar, estudar, modificar e distribuir este pacote em seus projetos pessoais ou comerciais. Apenas peço humildemente que se lembre de mencionar esse
-repositório na sua documentação.
+Este projeto está sob a licença **MIT**. Veja o arquivo [LICENSE](https://www.google.com/search?q=LICENSE) para mais detalhes. Sinta-se livre para usar, estudar, modificar e distribuir este pacote em seus projetos pessoais ou comerciais. Apenas peço humildemente que se lembre de mencionar esse repositório na sua documentação.
 
 ## Colaboração
 

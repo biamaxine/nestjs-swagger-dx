@@ -1,8 +1,8 @@
 {
   "name": "nestjs-swagger-dx",
-  "version": "1.1.2",
-  "description": "",
-  "author": "Bia Maxine",
+  "version": "1.2.0",
+  "description": "uma biblioteca focada em melhorar a Experiência do Desenvolvedor (DX) ao unificar as ferramentas @nestjs/swagger, class-validator e class-transformer",
+  "author": "Bia Maxine <bianca.maxine.dev@gmail.com>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/biamaxine/nestjs-swagger-dx.git"
@@ -14,7 +14,11 @@
   "keywords": [
     "nestjs",
     "swagger",
-    "typescript"
+    "typescript",
+    "open-api",
+    "@nestjs/swagger",
+    "class-validator",
+    "class-transformer"
   ],
   "license": "MIT",
   "main": "dist/index.js",

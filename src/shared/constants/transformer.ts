@@ -34,9 +34,8 @@ export const SDX_TRANSFORMER = {
       transformOptions,
     ),
 
-  ToParsedJSON: <T>(transformOptions?: TransformOptions) =>
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    Transform(({ value }: { value: T }): T | unknown => {
+  ToParsedJSON: <T, U>(transformOptions?: TransformOptions) =>
+    Transform(({ value }: { value: T }): T | U => {
       if (typeof value !== 'string') return value;
 
       try {

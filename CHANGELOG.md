@@ -5,6 +5,23 @@ Todas as alterações notáveis neste projeto serão documentadas neste arquivo.
 O formato baseia-se no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-03-30
+
+### 🚀 Features (Funcionalidades)
+
+- **Documentação Exclusiva (Swagger):** Adição das propriedades `docRequired` e `docNullable` às opções do `@SDXProperty`. Elas permitem alterar estritamente o contrato visual da documentação (exibindo um campo como obrigatório, opcional ou anulável) sem interferir nas regras reais de injeção do `class-validator`.
+- **Valores Padrão (`default`):** O `@SDXProperty` agora suporta de forma nativa e inteligente a propriedade `default`. Quando definida, a biblioteca injeta automaticamente um `@Transform` sob o capô, garantindo que requisições que omitam o campo (`undefined`) assumam o valor padrão estipulado antes das etapas de validação.
+- **Controle Rigoroso de Inferência:** A antiga opção `ignoreTypeValidations` foi refatorada e renomeada para `ignoreValidations`. Agora, além de bloquear as validações primitivas (`@IsString`, `@IsNumber`, etc.), ela abrange de forma mais segura o bloqueio de inferências automáticas, sendo a válvula de escape definitiva para _Union Types_ e objetos complexos transformados manualmente.
+
+### 🐞 Bug Fixes (Correções)
+
+- **Validadores com Argumentos (Inputs):** Correção crítica na assinatura arquitetural do `SDX_VALIDATOR_WITH_INPUT`. O reposicionamento do parâmetro `validationOptions` e a implementação do _spread operator_ (`...inputs`) resolveram o bug onde validadores que exigem argumentos (como `@IsEnum`, `@Min`, `@Max`) perdiam suas configurações (ex: o array de opções do enum chegava vazio ao `class-validator`).
+
+### 📖 Documentation (Documentação)
+
+- **Tabela de Propriedades Nativas:** Reestruturação do `README.md` com a inclusão da tabela "Validação das Propriedades Nativas do Swagger", funcionando como um _cheat sheet_ rápido do mapeamento automático feito pela biblioteca.
+- **Seção de Válvulas de Escape:** Melhoria na didática da documentação ao separar e explicar claramente os conceitos de "Documentação Exclusiva" versus "Comportamento Interno".
+
 ## [1.1.2] - 2026-03-27
 
 ### 🚀 Features (Funcionalidades)

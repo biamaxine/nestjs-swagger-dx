@@ -1,19 +1,17 @@
 import { applyDecorators, Logger } from '@nestjs/common';
 import { ApiProperty, ApiPropertyOptions } from '@nestjs/swagger';
 
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { ValidationOptions } from 'class-validator';
 
-import {
-  PropertyDecoratorFn,
-  SDX_CLASS_VALIDATOR,
-} from '../constants/class-validator-map';
+import { PropertyDecoratorFn } from '../constants/class-validator-map';
 import { SDX_TRANSFORMER } from '../constants/transformer';
 import {
   SDX_TYPE_DEACTIVATORS,
   SDXTypeDeactivator,
 } from '../constants/type-deactivators';
 import {
+  PropertyDecoratorFnWithInputs,
   SDX_VALIDATOR,
   SDX_VALIDATOR_WITH_INPUT,
 } from '../constants/validator';
@@ -62,7 +60,7 @@ function addPropertyDecorator<K extends keyof SDXValidationConfig>(
 
         if (hasDecorator(validator, validatorName)) return false;
 
-        const fn = SDX_VALIDATOR[validatorName];
+        const fn = SDX_VALIDATOR[validatorName] as PropertyDecoratorFn;
         return !!decorators.push(fn(validationOptions, ...args));
       }
 
@@ -71,9 +69,13 @@ function addPropertyDecorator<K extends keyof SDXValidationConfig>(
 
         if (hasDecorator(validator, null, validatorWithInputName)) return false;
 
-        const fn = SDX_VALIDATOR_WITH_INPUT[validatorWithInputName];
+        const fn = SDX_VALIDATOR_WITH_INPUT[
+          validatorWithInputName
+        ] as PropertyDecoratorFnWithInputs;
         try {
-          return !!decorators.push(fn(args[0], validationOptions));
+          return !!decorators.push(
+            fn(validationOptions, args[0] as any) as PropertyDecoratorFn,
+          );
         } catch (err) {
           Logger.error(
             `Failure to apply ${validatorWithInputName} with args: ` +
@@ -93,7 +95,7 @@ function addPropertyDecorator<K extends keyof SDXValidationConfig>(
 
     const fn = validator;
     try {
-      return !!decorators.push(fn(...args, validationOptions));
+      return !!decorators.push(fn(validationOptions, ...args));
     } catch (err) {
       Logger.error(
         `Failure to apply ${validator.name} with args: ` +
@@ -127,7 +129,9 @@ export function SDXProperty(opts: SDXPropertyOptions = {}) {
       validators = [],
       validationOptions,
       docType, // tipo que será exibido na documentação
-      ignoreTypeValidations,
+      docRequired,
+      docNullable,
+      ignoreValidations,
       ...apiPropertyOptions
     } = opts;
 
@@ -198,99 +202,120 @@ export function SDXProperty(opts: SDXPropertyOptions = {}) {
       decorators.push(fn(_validationOptions));
     }
 
-    /**
-     * Aplicação dos decoradores de tipo
-     * Aqui, conseguimos que algumas propriedades da documentação Swagger passam
-     * à espelhar diretamente as validações.
-     */
-    if (_apiPropertyOptions.enum) {
-      // Um `enum`, nada mais é que uma união de tipos e, portanto, o TS não
-      // consegue capturar essa inferência automaticamente, aferindo `object` no
-      // lugar do `enum`.
-      addValidator(SDX_CLASS_VALIDATOR.IsEnum, 'IsEnum', [
-        _apiPropertyOptions.enum,
-      ]);
-    } else if (ignoreTypeValidations) {
-      // Não aplica validações de tipo
-      //
-      // Isso é útil para quando recebemos um valor de um tipo e transformamos
-      // em outro tipo manualmente. Ex. Se recebemos uma string que pode ser um
-      // email ou um cpf e transformamos em um objeto com as propriedades
-      // `email` ou `cpf`, não queremos passar o objeto para a documentação, nem
-      // uma validação @IsString depois de já termos transformado o objeto.
-    } else if (type === String || type === 'string') {
-      const { maxLength, minLength, pattern } = _apiPropertyOptions;
+    // Se `ignoreValidations: true` as validações de tipo não são aplicadas:
+    //
+    // Isso é útil para quando recebemos um valor de um tipo e transformamos
+    // em outro tipo manualmente. Ex. Se recebemos uma string que pode ser um
+    // email ou um cpf e transformamos em um objeto com as propriedades
+    // `email` ou `cpf`, não queremos passar o objeto para a documentação, nem
+    // uma validação @IsString depois de já termos transformado o objeto.
+    if (!ignoreValidations) {
+      // Aplicação dos decoradores de tipo
+      // Aqui, conseguimos que algumas propriedades da documentação Swagger passam
+      // à espelhar diretamente as validações.
+      if (_apiPropertyOptions.enum) {
+        // Um `enum`, nada mais é que uma união de tipos e, portanto, o TS não
+        // consegue capturar essa inferência automaticamente, aferindo `object` no
+        // lugar do `enum`.
+        addValidator(
+          SDX_VALIDATOR_WITH_INPUT.IsEnum,
+          'IsEnum',
+          _apiPropertyOptions.enum,
+        );
+      } else if (type === String || type === 'string') {
+        const { maxLength, minLength, pattern } = _apiPropertyOptions;
 
-      if (pattern) {
-        addValidator(SDX_CLASS_VALIDATOR.Matches, 'Matches', [pattern]);
-      } else if (maxLength || minLength) {
-        if (maxLength)
-          addValidator(SDX_CLASS_VALIDATOR.MaxLength, 'MaxLength', [maxLength]);
+        if (pattern) {
+          addValidator(SDX_VALIDATOR_WITH_INPUT.Matches, 'Matches', pattern);
+        } else if (maxLength || minLength) {
+          if (maxLength)
+            addValidator(
+              SDX_VALIDATOR_WITH_INPUT.MaxLength,
+              'MaxLength',
+              maxLength,
+            );
 
-        if (minLength)
-          addValidator(SDX_CLASS_VALIDATOR.MinLength, 'MinLength', [minLength]);
-      } else if (
-        !hasValidator(SDX_CLASS_VALIDATOR.Length, null, 'Length') &&
-        canApplyValidator.string
-      ) {
-        addValidator(SDX_CLASS_VALIDATOR.IsString, 'IsString');
+          if (minLength)
+            addValidator(
+              SDX_VALIDATOR_WITH_INPUT.MinLength,
+              'MinLength',
+              minLength,
+            );
+        } else if (
+          !hasValidator(SDX_VALIDATOR_WITH_INPUT.Length, null, 'Length') &&
+          canApplyValidator.string
+        ) {
+          addValidator(SDX_VALIDATOR.IsString, 'IsString');
+        }
+      } else if (type === Number || type === 'number' || type === 'integer') {
+        const { maximum, minimum } = _apiPropertyOptions;
+
+        if (type === 'integer') addValidator(SDX_VALIDATOR.IsInt, 'IsInt');
+
+        if (maximum || minimum) {
+          if (minimum)
+            addValidator(SDX_VALIDATOR_WITH_INPUT.Min, 'Min', minimum);
+          if (maximum)
+            addValidator(SDX_VALIDATOR_WITH_INPUT.Max, 'Max', maximum);
+        } else if (canApplyValidator.number) {
+          addValidator(SDX_VALIDATOR.IsNumber, 'IsNumber');
+        }
+      } else if (type === Boolean || type === 'boolean') {
+        addValidator(SDX_VALIDATOR.IsBoolean, 'IsBoolean');
+      } else if (type === Object || type === 'object') {
+        if (canApplyValidator.object)
+          addValidator(SDX_VALIDATOR.IsObject, 'IsObject');
+      } else if (!isArray && typeof type !== 'string') {
+        addValidator(SDX_VALIDATOR.ValidateNested, 'ValidateNested');
+
+        if (!hasTransformer(Type as PropertyDecoratorFn))
+          decorators.push(Type(() => type as Function));
       }
-    } else if (type === Number || type === 'number' || type === 'integer') {
-      const { maximum, minimum } = _apiPropertyOptions;
 
-      if (type === 'integer') addValidator(SDX_CLASS_VALIDATOR.IsInt, 'IsInt');
+      if (isArray) {
+        const { maxItems, minItems } = _apiPropertyOptions;
 
-      if (maximum || minimum) {
-        if (minimum) addValidator(SDX_CLASS_VALIDATOR.Min, 'Min', [minimum]);
-        if (maximum) addValidator(SDX_CLASS_VALIDATOR.Max, 'Max', [maximum]);
-      } else if (canApplyValidator.number) {
-        addValidator(SDX_CLASS_VALIDATOR.IsNumber, 'IsNumber');
-      }
-    } else if (type === Boolean || type === 'boolean') {
-      addValidator(SDX_CLASS_VALIDATOR.IsBoolean, 'IsBoolean');
-    } else if (type === Object || type === 'object') {
-      if (canApplyValidator.object)
-        addValidator(SDX_CLASS_VALIDATOR.IsObject, 'IsObject');
-    } else if (!isArray && typeof type !== 'string') {
-      addValidator(SDX_CLASS_VALIDATOR.ValidateNested, 'ValidateNested');
+        if (maxItems || minItems) {
+          if (maxItems)
+            addPropertyDecorator(decorators, validators, {
+              ..._validationOptions,
+              each: false,
+            })(SDX_VALIDATOR_WITH_INPUT.ArrayMaxSize, 'ArrayMaxSize', maxItems);
 
-      if (!hasTransformer(Type as PropertyDecoratorFn))
-        decorators.push(Type(() => type as Function));
-    }
-
-    if (!ignoreTypeValidations && isArray) {
-      const { maxItems, minItems } = _apiPropertyOptions;
-
-      if (maxItems || minItems) {
-        if (maxItems)
+          if (minItems)
+            addPropertyDecorator(decorators, validators, {
+              ..._validationOptions,
+              each: false,
+            })(SDX_VALIDATOR_WITH_INPUT.ArrayMinSize, 'ArrayMinSize', minItems);
+        } else if (canApplyValidator.array) {
           addPropertyDecorator(decorators, validators, {
             ..._validationOptions,
             each: false,
-          })(SDX_CLASS_VALIDATOR.ArrayMaxSize, 'ArrayMaxSize', [maxItems]);
-
-        if (minItems)
-          addPropertyDecorator(decorators, validators, {
-            ..._validationOptions,
-            each: false,
-          })(SDX_CLASS_VALIDATOR.ArrayMinSize, 'ArrayMinSize', [minItems]);
-      } else if (canApplyValidator.array) {
-        addPropertyDecorator(decorators, validators, {
-          ..._validationOptions,
-          each: false,
-        })(SDX_CLASS_VALIDATOR.IsArray, 'IsArray');
+          })(SDX_VALIDATOR.IsArray, 'IsArray');
+        }
       }
     }
 
     // Aplicação de @IsOptional que permite entradas `undefined`
     if (_apiPropertyOptions.required === false)
-      addValidator(SDX_CLASS_VALIDATOR.IsOptional, 'IsOptional');
+      addValidator(SDX_VALIDATOR.IsOptional, 'IsOptional');
 
     // Aplicação de @ValidateIf que permite entradas `null`
     if (_apiPropertyOptions.nullable) {
       // Aqui usamos `decorators.push` pois não queremos que essa validação seja
       // bloqueada por outros `@ValidateIf` que o dev insira
       decorators.push(
-        SDX_CLASS_VALIDATOR.ValidateIf((_, value) => value !== null),
+        SDX_VALIDATOR_WITH_INPUT.ValidateIf({}, (_, value) => value !== null),
+      );
+    }
+
+    if (_apiPropertyOptions.default) {
+      decorators.push(
+        Transform(
+          ({ value }) =>
+            value === undefined ? _apiPropertyOptions.default : value,
+          transformOptions,
+        ),
       );
     }
 
@@ -307,9 +332,17 @@ export function SDXProperty(opts: SDXPropertyOptions = {}) {
     //
     // Aqui estamos documentando a propriedade antes de realizar qualquer
     // validação.
-    return applyDecorators(...decorators, ApiProperty(_apiPropertyOptions))(
-      target,
-      propertyKey,
-    );
+    return applyDecorators(
+      ...decorators,
+      ApiProperty({
+        ..._apiPropertyOptions,
+        required: (docRequired !== undefined
+          ? docRequired
+          : _apiPropertyOptions.required) as any,
+        nullable: (docNullable !== undefined
+          ? docNullable
+          : _apiPropertyOptions.nullable) as any,
+      }),
+    )(target, propertyKey);
   };
 }

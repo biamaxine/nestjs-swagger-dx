@@ -1,4 +1,4 @@
-import { SDXValidationModule } from 'src';
+import { PrismaSortOrderInputDto, SDXValidationModule } from 'src';
 
 // O SDXValidationModule precisa ser contruído antes das demais importações,
 // para que as configurações globais existam antes do TS rodar os decoradores.
@@ -33,7 +33,10 @@ async function bootstrap() {
     .setVersion('1.0.0')
     .addBearerAuth()
     .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  const documentFactory = () =>
+    SwaggerModule.createDocument(app, config, {
+      extraModels: [PrismaSortOrderInputDto],
+    });
   SwaggerModule.setup('api', app, documentFactory);
 
   await app.listen(process.env.PORT ?? 3000);

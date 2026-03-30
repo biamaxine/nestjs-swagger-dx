@@ -1,11 +1,10 @@
 import { ValidationOptions } from 'class-validator';
 
-import { SortOrder } from '../../constants/prisma/enums';
 import { SDXProperty } from '../property.decorator';
 
 export function IsPrismaSortOrder(opts?: ValidationOptions) {
   return SDXProperty({
-    enum: SortOrder,
+    enum: ['asc', 'desc'],
     required: false,
     validationOptions: opts,
   });
